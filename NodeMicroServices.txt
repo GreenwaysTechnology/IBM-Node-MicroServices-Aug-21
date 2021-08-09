@@ -1,0 +1,326 @@
+					Node.js	
+..............................................................................................
+
+Lab:
+node
+vscode
+docker
+...........................................................................................
+
+What is Node.js?
+ Node.js® is a JavaScript runtime built on Chrome's V8 JavaScript engine.
+
+Java Script Runtime:
+ -It is a Runtime to run javascript code.
+
+Types of Javascript Runtime:
+
+1.Embeded javascript Runtime
+   The javascript runtime is embeded into browser 
+Every WebBrowser has javascript runtime
+
+1.1.Chrome - V8
+What is V8?
+V8 is Google’s open source high-performance JavaScript and WebAssembly engine, written in C++. It is used in Chrome and in Node.js.
+
+1.2.SpiderMonkey 
+	is Mozilla’s JavaScript and WebAssembly Engine, used in Firefox, Servo and various other projects. It is written in C++, Rust and JavaScript. 
+
+1.3.ChakraCore
+   Microsoft edge.
+
+etc....
+
+2.Standalone Javascript Runtime.
+
+-V8
+..............................................................................................
+
+We have many javascript engine. Can we run javascript code on all javascript engines as it is?
+
+95% is possible.
+
+All javascript engines implements the spec called "ECMA" Specification.
+
+ECMA is standard to define javascript language. 
+
+We call 
+
+ECMA - ES - 1.0
+ES 2.0
+ES 4.0
+ES 5.0
+ES 6.0
+ES 7....
+
+Most stable version is called -ES 5 AND ES 6
+............................................................................................
+
+What is Javascript?
+
+ Javascript is a Programming language
+ 
+ Javascript is object based,functional style, event driven programming language.
+
+
+Object based vs object oriented:
+................................
+
+Object Oriented Principles:
+...........................
+
+1.Abstraction
+2.Encapsulation
+3.Hierarchy
+4.Typing
+5.Modularity
+----------------------
+6.Concurrency
+7.Persistency
+
+
+if any language follows all oo concepts, object oriented language.
+
+if any language is not following any one of object oriented principle or paritially implements
+that language is called as 'object based language'.
+
+
+What type of apps you can build using js?
+ Object based Language
+............................................................................................
+functional Programming:
+  It is like object oriented programming. 
+  It is based on mathmetics called "Lambda calculus".
+FP =Lambda calculus
+
+Javascript implements object concepts and functional programming concepts in one place.
+Javascript is hybrid style language.
+.............................................................................................
+
+Why javascript was created?
+  JS created for HTML Document creation,maniupulation  language inside browser :DOM Programming.
+
+When js was created?
+
+In 1996, js was created by Netscap communications.
+
+When js came out for use?
+
+1996 , JS submitted to ECMA Committe.
+
+1997-> JAVA SCRIPT 1.0 -> es 1
+es 3 -1999
+es 4 -2006
+es 5 -2007
+es 6 -2012-2015. - ecma 2015
+es6 7,8,9....
+..............................................................................................
+
+What type of apps i can build using javascript?
+
+-Browser apps - DOM programming
+-Server side apps - Web Applications- Node.js
+-Mobile Apps 
+-IOT Apps
+
+Now javascript is every where.
+
+.............................................................................................
+Blocking and Non Blocking Async and Sync Programming:
+.....................................................
+
+What is blocking and  non blocking in general?
+
+Blocking means the method/function blocks/pause/freeze the main process until it returns the data to the caller.
+
+Blocking apis will stop the execution until the result is returned to the caller.
+
+Blocking IO AND Non Blocking io?
+
+
+
+File Descriptor:
+................
+
+-FD is a datastructure presented inside os kernal at very low level
+-FD is mapper between os and hardware layer
+-FD is entry and exit point of os.
+
+
+Blocking IO Example: java:
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+public class CopyBytes {
+    public static void main(String[] args) throws IOException {
+
+        FileInputStream in = null;
+        FileOutputStream out = null;
+
+        try {
+            in = new FileInputStream("xanadu.txt");
+            out = new FileOutputStream("outagain.txt");
+            int c;
+
+            while ((c = in.read()) != -1) {
+                out.write(c);
+            }
+
+	   //some other api call
+	    myapi(); // will not be called until read operation and write operation is            completed
+
+        } finally {
+            if (in != null) {
+                in.close();
+            }
+            if (out != null) {
+                out.close();
+            }
+        }
+    }
+}
+////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
+
+Blocking io means:
+
+ Application process is waiting until data is read from the kernal.
+ if data is availble inside application only, it will move the next cycle.
+
+eg 
+ in.read()| 1.5sec
+ otherapi()-this method will be called after 1.5sec only.
+............................................................................................
+
+............................................................................................
+				Multithreading and Networking
+............................................................................................
+
+Multi Threading and IO (Blocking IO):
+
+In General application platforms(jvm,CLR)(process) is multi threaded.
+
+WebServers and Web Containers for any technology(java,.net,python,php) are multi threaded.
+
+Web Containers and Request handling:
+...................................
+
+Each Request is mapped with a single thread
+
+Request Per Thread Model
+
+100 request === 100 Threads
+
+Eg:
+
+1.client-1 asks 1 gb file from the web server
+
+ client-----request-----|WebServer----create/use a thread --starts io operations
+ client-----request-----|WebServer----create/use a thread --starts io operations
+ client-----request-----|WebServer----create/use a thread --starts io operations
+ client-----request-----|WebServer----create/use a thread --starts io operations
+ client-----request-----|WebServer----create/use a thread --starts io operations
+ client-----request-----|WebServer----create/use a thread --starts io operations
+
+Threading Model:
+
+ -  Each Request is assigned to thread
+
+C10k : concurrently handling ten thousand connections
+
+A web server should handle 10k connections at the same point of time(may be 1sc/1min)
+
+C10k is one of the real time problem, expectation was if web server able to handle
+10k connections, then it is good infra structure,so i dont need to add more machines.
+
+How to reduce servers , how to utilize the existing hardware resouces.
+
+               "The birth of non blocking technology" / How to reduce threads.
+
+
+Problems of Multi Threaded Models:
+
+1.Context Switch:
+   - if a thread is assigned for a client request, that request takes more time to process.
+ thread need to be paused.
+    Moving a thread from sleep to running(active) --- active to sleep - ctx switch..
+
+cpu takes much time on thread schduling, so it decreases the performance of the server.
+
+2.memory
+   Every thread eats upto 1MB of memory.
+
+............................................................................................
+
+
+Non Blocking io apis:
+
+In 2000,Linux Operating system started providing, apis in order to perform non blocking io operation.
+
+1.select
+
+2.poll
+
+Select vs poll.
+
+3.epoll
+What is epoll?
+
+ Epoll is a program which monitors fd table.
+ Fd table is array.
+ epoll has a for loop which iterates fd table
+
+ epollfd = epoll_create1(0);
+
+infinit loop
+ for(;;){
+     read array(fd) entries from 0th index
+     checks data availablity from the hardware
+     if yes
+	 copy data from the hardware to kernal buffer
+     else
+       move next index
+      checks daa availablity from the hardware for 1st index.
+    ....
+    move until the last index.
+   
+ }
+
+
+Steps:
+
+1.thread starts  calling sys call for network io, while doing, it registers a handler function which will be used later by the thread.
+
+2.thread gets control immediately since kernal relases the control
+
+3.Thread starts processing other tasks
+
+Kernal side
+
+1. loop is running by watching fds
+
+2. data is available
+
+3. kernal copies data into buffer
+
+4. kernal emits event
+
+Application
+
+4. Receive events process the event by assigning handler function.
+
+5. Handler function gets called, send data to Caller(user).
+
+.............................................................................................
+				How node implements the nonblocking arch
+..............................................................................................
+
+
+
+
+
+
+
+
