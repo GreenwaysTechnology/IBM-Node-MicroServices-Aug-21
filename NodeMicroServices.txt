@@ -319,6 +319,516 @@ Application
 
 
 
+Node.js:
+
+-Multi platform(any os), non blocking ,event processing archiecture.
+-Reduces more threads,having limited threads-single thread for event processing.
+-Suitable for large network concurrency applications.
+
+ 1000 requests = 1 thread.
+Node components:
+
+V8:
+
+
+libuv:
+  libuv is a multi-platform support library with a focus on asynchronous I/O.
+  libuv is collection of c apis for multiple operatings
+    -libuv works with epoll in linux
+    -libuv works with kqueue in mac/open bsd os
+    -libuv works with iocp in windows
+
+Features:
+
+Full-featured event loop backed by epoll, kqueue, IOCP, event ports.
+Asynchronous TCP and UDP sockets
+Asynchronous DNS resolution
+Asynchronous file and file system operations
+File system events
+ANSI escape code controlled TTY
+IPC with socket sharing, using Unix domain sockets or named pipes (Windows)
+Child processes
+Thread pool
+Signal handling
+High resolution clock
+Threading and synchronization primitives
+
+
+libuv contains:
+
+1. event loop thread:
+
+  This is demaon thread, starts spinning for listening for incomming events from os kernal space.
+
+2.Thread Pools
+   libuv maintains set of threads other than event loop thread for doing "BLOCKING" IO operations.
+
+Warining; 
+   dont over use thread pools , because if use more threads from the thread poll then it impacts performance,memory...
+   Dont block event loop thread.
+
+////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
+                                NonBlocking and Async implementation
+............................................................................................
+
+In order to write non blocking  apps.
+
+ -Language/Platform must provide high level apis
+	 -Node provides lot of high level apis 
+ -We need to provide listener function/callback function, for handling result
+
+Listener function has two phases:
+
+1.Function must be registered before calling kernal
+   Registernation is based on event name.
+
+2.Functions gets called by thread once the event is given
+
+Every listener function is higher order function : Function as parameter.
+
+
+How javascript /node understands that programs need proceed by event loops thread.
+what are blocking api and what are non blocking api.
+
+->All apis are generally blocking except apis which binds with non blocking apis.
+
+eg:
+ console.log() - blocking
+
+Node provides non blocking category of apis
+
+1.timers
+
+2.General fs io apis
+
+3.all network api
+   http,tcp,udp
+
+
+All non blockings are powered "handler/callback/listener" functions.
+
+Listener functions are generally higher order function: Passed as parameter.
+
+
+Non blocking coding Styles:
+
+Note: All are same but just wrappers on top that.
+
+1.callback style /listener
+
+2.Promise style : wrapper for callbacks
+
+3.async functions and await : wrapper for promise.
+
+
+
+Common Non Blocking Apis provided by node
+
+1.timers
+2.file system apis
+3.networking apis
+etc....
+..........................................................................................
+src/index.js
+
+console.log('Hello Node');
+
+how to run?
+
+C:\session\ibm\2021\aug\apps\mynodeapp> node src/index.js
+Hello Node
+
+...........................................................................................
+
+Functions declaration,invocation:
+//higher order function -  listner pattern
+
+function sayHello() {
+    console.log('Hello')
+}
+sayHello();
+//parameters and args
+
+//a and b are args
+function add(a = 0, b = 0) {
+    return a + b;
+}
+//1 , 2 are parameters
+console.log(add(1, 2))
+console.log(add()) //undefined,undefined
+/////////////////////////////////////////////////////////////////////////////////////
+//Function is first class citzien -  function can be stored inside variable,passed around.
+
+//var ,let ,const - variable declaration
+
+var i = 10; // es 5 style
+let j = 100; // es 6 style
+const e = 100; // es 6 style
+
+console.log(i, j, e)
+
+i = 900;
+j = 89;
+// e =900;
+
+console.log(i, j, e)
+
+//anonmous function
+let greet = function (name = 'default') {
+    console.log('greet', name)
+};
+greet();
+greet('Subramanian')
+
+//arrow function. anonmous function in es 6
+let hai = (name = 'default') => {
+    console.log('greet', name)
+};
+hai();
+
+//if function has only one line of body ,we can remove  {}
+hai = (name = 'default') => console.log('greet', name);
+hai();
+
+//arrow and return
+
+let multiply = (a = 0, b = 0) => {
+    return a * b;
+}
+console.log(multiply(10, 10))
+
+//if function has only one line of body with return statement, we can remove return and {}
+
+multiply = (a = 0, b = 0) => a * b;
+console.log(multiply(10, 10))
+
+//one parameter , no default value and return the same. we can remove () and {} and return statement
+let echo = message => message
+
+console.log(echo("Hello Echo"))
+..............................................................................................
+
+Higher order function:
+  function itself is value, so can be passed as parameter to another function that function is called higher order function.
+
+function parameter can be any literal(values).
+
+types of literals
+
+1.string
+2.number
+3.boolean
+4.undefined
+5.nan
+6.infinity
+7.null
+8.function
+9.object
+
+//Higher order function
+
+
+function doStuff(a) {
+    console.log(a)
+}
+
+//we can pass any literal as parameter
+doStuff(10)
+doStuff("hello")
+doStuff(true)
+let x = 10;
+doStuff(x)
+//pass function as parameter
+
+//now connect is higher order
+function connect(action) {
+    console.log(action);
+    action(); //invocation 
+}
+//pass function as parameter
+let myFun = function () {
+    console.log('myFun')
+}
+connect(myFun);
+
+connect(function () {
+    console.log('my fun anonmous')
+});
+
+//arrow
+let myconnect = action => {
+    console.log(action);
+    action(); //invocation 
+};
+
+let myFun1 = () => console.log('myFun-arrow');
+myconnect(myFun1);
+
+myconnect(() => console.log('my fun anonmous-arrow'));
+
+..............................................................................................
+
+
+Advanced Higher order function:
+
+
+let getMessage = action => {
+    action('Hello');
+}
+getMessage(message => console.log(message));
+
+//complex function
+
+let login = (userName, password, successAction, failureAction) => {
+    //logic
+    if (userName === 'admin' && password === 'admin') {
+        successAction('login success')
+    } else {
+        failureAction('login failed')
+    }
+}
+login('admin', 'admin', status => { console.log(status) }, err => { console.log(err) })
+login('foo', 'bar', status => { console.log(status) }, err => { console.log(err) })
+
+...........................................................................................
+
+How to write blocking code?
+
+//blocking /sequencial code
+
+function sayHello() {
+    console.log('hello')
+}
+function sayHai() {
+    console.log('hai')
+}
+function sayGreet() {
+    console.log('greet')
+}
+
+sayHello(); 
+sayHai();
+sayGreet();
+
+
+How to write non blocking code 
+
+--code will not stop executing next line of code.
+-->once result is availble only the function gets called -  callback function/listner function.
+--> we need to schudule the code in the background(kernal space)- we need non blocking high level api from js/node.
+
+How to write callback functions?
+ -higher order function
+
+Common Non Blocking Apis provided by node
+
+1.timers
+2.file system apis
+3.networking apis
+etc....
+
+1.timers
+
+setTimeout,setInterval,setImmediate...
+
+
+//non blocking using timer
+
+function blockMe(message) {
+    console.log(message);
+}
+//non blocking function
+function delay(action) {
+    //high level api to schdule the task in the background
+    setTimeout(action, 5000, 'Hello!!!')
+}
+
+//
+blockMe('start')
+delay(response=>console.log(response));
+blockMe('end')
+blockMe('still going')
+
+callback Programming:
+....................
+
+passing function as parameter , gets called after getting event.
+............................................................................................
+..............................................................................................
+					Nested Callbacks
+..............................................................................................
+
+ The output of one callback, will be input to another callback.
+
+Use case
+
+ - call getUser api, which returns user if not , throw error.
+
+ - Based on user i need to call login method, if login failed throw error
+
+ - Based on login output, i need to call dashboard
+
+/**
+ * getUser--->login--->showPage--->Display result
+ * 
+ * resolve=SuccessAction
+ * reject =FailureAction
+ */
+
+const getUser = (resolve, reject) => {
+    //logic
+    let user = {
+        name: 'admin',
+        password: 'admin'
+    };
+    //  user = null;
+    let error = {
+        code: 500,
+        message: 'User not found'
+    }
+    if (user) {
+        setTimeout(resolve, 1000, user);
+    } else {
+        setTimeout(reject, 1000, error);
+    }
+}
+
+const login = (user, resolve, reject) => {
+
+    let status = 'login success';
+    let error = 'login failed';
+
+    if (user.name === 'admin' && user.password === 'admin') {
+        setTimeout(resolve, 1000, status)
+    } else {
+        setTimeout(reject, 1000, error);
+    }
+}
+
+const showPage = (status, resolve, reject) => {
+    let successPage = 'Welcome to Prime Account';
+    let failurePage = 'Welcome to Guest Account'
+
+    if (status === 'login success') {
+        setTimeout(resolve, 1000, successPage)
+    } else {
+        setTimeout(reject, 1000, failurePage)
+
+    }
+
+
+}
+
+getUser(user => {
+    console.log(user)
+    login(user, status => {
+        console.log(status)
+        showPage(status, spage => {
+            console.log(spage)
+        }, epage => {
+            console.log(epage);
+        })
+    }, err => {
+        console.log(err);
+    })
+}, err => {
+    console.log(err)
+});
+
+
+The Problems of Nested Callbacks:
+................................
+
+Questions:
+
+1.Whether this code is able to understand quickly
+2.Whether this code is able to debug
+3.Whehter this code is scalable?
+4.whether this code is maintaiable?
+
+fs.readdir(source, function (err, files) {
+  if (err) {
+    console.log('Error finding files: ' + err)
+  } else {
+    files.forEach(function (filename, fileIndex) {
+      console.log(filename)
+      gm(source + filename).size(function (err, values) {
+        if (err) {
+          console.log('Error identifying file size: ' + err)
+        } else {
+          console.log(filename + ' : ' + values)
+          aspect = (values.width / values.height)
+          widths.forEach(function (width, widthIndex) {
+            height = Math.round(width / aspect)
+            console.log('resizing ' + filename + 'to ' + height + 'x' + height)
+            this.resize(width, height).write(dest + 'w' + width + '_' + filename, function(err) {
+              if (err) console.log('Error writing file: ' + err)
+            })
+          }.bind(this))
+        }
+      })
+    })
+  }
+})
+
+"Callback Hell":
+................
+
+ -It is not bug or error in code
+ -It is way of writing callback based program
+ -Callback based non blocking programming hard to understand,maintain,debug,scale Which 
+  called as "Callback Hell".
+
+How to write better async/non blocking code without writings callbacks?
+
+-Generally without callbacks not possible to write async/non blocking code.
+-Rather we can abstract complexity of writting callbacks.
+
+In 2005, JQUERY team started with working complex callback patterns, they found callback hell problem.
+
+They proposed a  Design pattern to write better callback programming(Async) programming.
+
+  "Promise".
+
+Promise is design pattern which hides complexity of callback patterns
+
+
+Since Promise is design pattern, many people have implemented Promise design pattern.
+
+1.JQuery -first promise implementation
+2.many libs and frameworks
+
+
+...........................................................................................
+
+In order standarize , ECMA committe decided to include Promise Design pattern at language level .(ES 6)
+2012 E6 Commit introduced promise design pattern  as  "Promise" Object  in javascript.
+
+
+
+Promises and non blocking,async and callback hell issues:
+.........................................................
+
+features of Promise Object:
+
+1.Promise by deafult is Async. Which implements timer api with 0 ms .
+
+Promise can be used with any async callback based  implementations.
+
+
+Objective:
+
+ To remove callbacks in async/non blocking code. write cleaner async programming.
+ To remove complex callback chaining code.
+.............................................................................................
+
+
+
+
+
 
 
 
