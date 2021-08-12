@@ -1,66 +1,24 @@
-/**
- * getUser--->login--->showPage--->Display result
- * 
- * resolve=SuccessAction
- * reject =FailureAction
- */
+const http = require('http');
 
-const getUser = (resolve, reject) => {
-    //logic
-    let user = {
-        name: 'admin',
-        password: 'admin'
-    };
-    //  user = null;
-    let error = {
-        code: 500,
-        message: 'User not found'
-    }
-    if (user) {
-        setTimeout(resolve, 1000, user);
-    } else {
-        setTimeout(reject, 1000, error);
-    }
-}
+//create server and handle client request
 
-const login = (user, resolve, reject) => {
-
-    let status = 'login success';
-    let error = 'login failed';
-
-    if (user.name === 'admin' && user.password === 'admin') {
-        setTimeout(resolve, 1000, status)
-    } else {
-        setTimeout(reject, 1000, error);
-    }
-}
-
-const showPage = (status, resolve, reject) => {
-    let successPage = 'Welcome to Prime Account';
-    let failurePage = 'Welcome to Guest Account'
-
-    if (status === 'login success') {
-        setTimeout(resolve, 1000, successPage)
-    } else {
-        setTimeout(reject, 1000, failurePage)
-
-    }
-
-
-}
-
-getUser(user => {
-    console.log(user)
-    login(user, status => {
-        console.log(status)
-        showPage(status, spage => {
-            console.log(spage)
-        }, epage => {
-            console.log(epage);
-        })
-    }, err => {
-        console.log(err);
+const server = http.createServer((req, res) => {
+    res.write('Hello Node HTTP server')
+    res.end();
+    //attach response events
+    res.on('close', () => {
+        console.log('response closed')
     })
-}, err => {
-    console.log(err)
+    res.on('finish', () => console.log('response finish event is called'))
+
+})
+
+//start webserver
+server.listen(3000, () => {
+    console.log(`HTTP Server is Running`);
+});
+
+//server events
+server.on('request', (req, res) => {
+    console.log('New Request has come ' + new Date())
 });

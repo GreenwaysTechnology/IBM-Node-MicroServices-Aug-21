@@ -1,4 +1,5 @@
-const todoservice = require('./services/todo.service');
+// const todoservice = require('./services/todo.service');
+const { findAllAsyncPromise, findAllAsyncCb } = require('./services/todo.service')
 
 
 async function main() {
@@ -11,7 +12,8 @@ async function main() {
     // todoservice.findAllAsyncPromise()
     //     .then(todos => console.log(todos));
 
-    const todos = await todoservice.findAllAsyncPromise();
+    // const todos = await todoservice.findAllAsyncPromise();
+    const todos = await findAllAsyncPromise()
     console.log(todos);
     // console.log('end')
 }

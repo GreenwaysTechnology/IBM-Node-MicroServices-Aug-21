@@ -1507,6 +1507,646 @@ Node js Built in modules:
 -http
 ............................................................................................
 
+1.os 
+
+The os module provides operating system-related utility methods and properties. It can be accessed using:
+const os = require('os');
+
+console.log(os.arch());
+console.log(os.cpus());
+
+
+const { arch, cpus } = require('os');
+console.log(arch());
+console.log(cpus());
+..............................................................................................
+Object destrucing:
+..................
+
+//object destructuring: es 6 feature
+
+// function printEmployee(employee) {
+//  console.log(`Id ${employee.id}`)
+//  console.log(`Name ${employee.name}`)
+//  console.log(`City ${employee.address.city}`)
+// }
+// function printEmployee(employee) {
+//     //destructuring syntax
+//     const { id, name, address } = employee;
+//     console.log(`Id ${id}`)
+//     console.log(`Name ${name}`)
+//     console.log(`City ${address.city}`)
+// }
+
+// function printEmployee({ id, name, address }) {
+//     console.log(`Id ${id}`)
+//     console.log(`Name ${name}`)
+//     console.log(`City ${address.city}`)
+// }
+
+// const printEmployee = ({ id, name, address }) => {
+//     console.log(`Id ${id}`)
+//     console.log(`Name ${name}`)
+//     console.log(`City ${address.city}`)
+// }
+const printEmployee = ({ id, name, address: { city } }) => {
+    console.log(`Id ${id}`)
+    console.log(`Name ${name}`)
+    console.log(`City ${city}`)
+}
+
+printEmployee({ id: 1, name: 'Subramanian', address: { city: 'Coimbatore' } })
+
+
+
+class EmployeeService {
+    findAll() {
+        return 'findall';
+    }
+}
+let empService = new EmployeeService();
+console.log(empService.findAll());
+
+
+let { findAll } = new EmployeeService();
+console.log(findAll());
+............................................................................................
+
+./ vs ''(without ./)
+.........
+
+ require('./services/TODOService');
+  ->here you can see ./
+  ./ -current dir
+
+ require('os'); => 
+  -here no ./ 
+
+Why?
+
+Note : if you are java devp, you know the classpath , how it works?
+
+
+require('os');
+
+Node internally uses a search algorthim,node always looks the folder called
+ "node_modules" in the current project, if not , then it searches, the node in built 
+installtion folder---c:/pf/node/node_modules--if it finds it will pick up from there else it will throw error.
+
+require('./services/TODOService');
+   it will lookup in the current dir or sub dirs only.
+
+nternal/modules/cjs/loader.js:800
+    throw err;
+    ^
+
+Error: Cannot find module 'osxx'
+Require stack:
+- C:\session\ibm\feb\nodems\mynodeapps\src\index.js
+[90m    at Function.Module._resolveFilename (internal/modules/cjs/loader.js:797:15)[39m
+[90m    at Function.Module._load (internal/modules/cjs/loader.js:690:27)[39m
+[90m    at Module.require (internal/modules/cjs/loader.js:852:19)[39m
+[90m    at require (internal/modules/cjs/helpers.js:74:18)[39m
+    at Object.<anonymous> (C:\session\ibm\feb\nodems\mynodeapps\src\index.js:1:32)
+[90m    at Module._compile (internal/modules/cjs/loader.js:959:30)[39m
+[90m    at Object.Module._extensions..js (internal/modules/cjs/loader.js:995:10)[39m
+[90m    at Module.load (internal/modules/cjs/loader.js:815:32)[39m
+[90m    at Function.Module._load (internal/modules/cjs/loader.js:727:14)[39m
+[90m    at Function.Module.runMain (internal/modules/cjs/loader.js:1047:10)[39m {
+  code: [32m'MODULE_NOT_FOUND'[39m,
+  requireStack: [ [32m'C:\\session\\ibm\\feb\\nodems\\mynodeapps\\src\\index.js'[39m ]
+.............................................................................................
+//////////////////////////////////////////////////////////////////////////////////////////
+				Event Emitter - Events Module
+..........................................................................................
+
+
+Node is Event Driven Platform. Node programs works based on events.
+
+Generally events are published by os kernal, event loop thread process those events.
+
+We(program) can publish events(custom events), Program can listen for those events.
+
+Types of Events:
+
+1.Kernal Events - Timer,IO,network Events
+2.Application Events -  events published and consumed by application itself.
+
+Application Events:
+...................
+
+Event Emitter Module: events
+
+   Much of the Node.js core API is built around an idiomatic asynchronous event-driven architecture in which certain kinds of objects (called "emitters") emit named events that cause Function objects ("listeners") to be called.
+
+Roles:
+
+1.Emitter 
+    Emitter emits events
+2.Listener
+    Listener listens
+
+Use case : we create object who acts listener and emitter.
+const EventEmitter = require('events');
+
+//declare class which inherits EventEmitter
+
+class CustomerService extends EventEmitter {
+
+    constructor() {
+        super();
+        //listener registration
+        this.on('sales', (evt) => {
+            console.log('We got Event');
+            console.log(evt)
+        })
+    }
+    //biz methods
+    buy(product) {
+        //emit event.
+        this.emit('sales', product);
+    }
+}
+//create object
+const custService = new CustomerService();
+custService.buy({ id: 1, name: 'Phone', price: 1000, qty: 1 })
+.............................................................................................
+...........................................................................................
+					IO
+				   (File System IO) :Hard disk
+............................................................................................
+Node was built for performning non blocking io / async io.
+
+What if i want to write blocking io is it Possible?
+
+ Yes!
+
+Node supports FS blocking io operations.
+
+File System:fs
+
+-used to read , write into and from disk.
+
+mode :
+
+  - sync /blocking 
+  - async/ non blocking
+
+based on data read/write:
+
+ -non streaming
+ -streaming
+
+
+const fs = require('fs');
+
+const filePath = './src/assets/info.txt';
+const options = {
+    encoding: 'UTF-8'
+}
+
+function block(message) {
+    console.log(message)
+}
+
+block('start')
+fs.readFile(filePath, options, (err, data) => {
+    if (err) throw err;
+    console.log(data);
+});
+block('end')
+
+..............................................................................................
+
+Blocking IO Operations: 
+
+-Node allows blocking io operations
+-Blocking io will block the current event loop thread.
+-In order to optimize , the event loop thread does not perform real io calls,Node provides
+ a separate thread  called "Worker pool thread" 
+
+const fs = require('fs');
+
+const filePath = './src/assets/info.txt';
+const options = {
+    encoding: 'UTF-8'
+}
+
+function block(message) {
+    console.log(message)
+}
+
+block('start')
+//blocking api
+const data = fs.readFileSync(filePath, options)
+console.log(data);
+block('end')
+/////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+
+How to write data into file async:
+
+const fs = require('fs');
+
+const filePath = './src/assets/infowrite.txt';
+const options = {
+    encoding: 'utf-8'
+}
+const data = 'Hello,How are you';
+
+fs.writeFile(filePath, data, options, err => {
+  if (err) throw err;
+  console.log(`data has been written into ${filePath}`)
+})
+////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+
+const fs = require('fs')
+const path = require('path');
+
+//node global variables
+// console.log(__dirname)
+// console.log(__filename)
+
+const filePath = path.join(__dirname,'assets/infowrite.txt')
+const options = {
+    encoding: 'utf-8'
+}
+const data = 'Hello,How are you';
+
+fs.writeFile(filePath, data, options, err => {
+  if (err) throw err;
+  console.log(`data has been written into ${filePath}`)
+})
+.............................................................................................
+				Promises and file System apis
+const fs = require('fs');
+
+src/services/file.service.js
+
+class FileService {
+    constructor() {
+
+    }
+    readFile(filePath, options) {
+
+        return new Promise((resolve, reject) => {
+            fs.readFile(filePath, options, (err, data) => {
+                if (err) {
+                    reject(err)
+                }
+                resolve(data);
+            })
+        })
+
+    }
+}
+
+module.exports = new FileService();
+
+const { readFile } = require('./services/file.service');
+const path = require('path');
+
+src/index.js
+
+async function main() {
+    const filePath = path.join(__dirname, 'assets/info.txt')
+    const options = {
+        encoding: 'utf-8'
+    }
+    // fileService.readFile(filePath, options)
+    //     .then(res => console.log(res))
+    //     .catch(err => console.log(err))
+
+    try {
+        const data = await readFile(filePath, options);
+        console.log(data);
+    }
+    catch (err) {
+        console.log(err)
+    }
+}
+main();
+..............................................................................................
+..............................................................................................
+				Event driven IO : Streaming
+..............................................................................................
+
+
+
+if you want to read or write from file or socket , you can do in two ways
+
+1.Non streaming:
+   only file io is supported, network io not supported
+
+-once file is read, the entire is loaded into node process buffer(memory), then it will be delivered to caller.
+
+-if more files are loaded into node process, node process gets crashed.
+
+-non streaming mode is not suitable for large and big files read or write operation.
+
+fs.readFile() and fs.writeFile are non streaming apis.
+
+2.streaming:
+   supported by fs and also network apis
+
+
+
+-Streaming is nothing but flow of data(chunks).
+-Streaming allows move the data from one place to another place one by one.
+-Streaming apis are other wise called evented io. which is powered events.
+
+
+Types of Streams:
+
+1.Readable Stream : input
+2.Writeable stream : output
+3.Duplex stream : read + write
+
+Node has lot of built in stream apis
+....................................
+
+Built in readable Streams:
+
+-HTTP responses, on the client
+-HTTP requests, on the server
+-fs read streams
+-zlib streams
+-crypto streams
+-TCP sockets
+-child process stdout and stderr
+-process.stdin
+
+Writable Streams:
+
+-HTTP requests, on the client
+-HTTP responses, on the server
+-fs write streams
+-zlib streams
+-crypto streams
+-TCP sockets
+-child process stdin
+-process.stdout, process.stderr
+
+
+All streaming apis are powered with events
+node io streams has built in events.
+events are emitted by node.
+Our programs are listeners
+
+Common events in all io
+.........................
+
+
+1.data event:
+ which is emitted by node, for each chunk.
+
+2.close event:
+  The 'close' event is emitted when the stream and any of its underlying resources (a file descriptor, for example) have been closed.
+
+3.end event:
+ The 'end' event is emitted when there is no more data to be consumed from the stream.
+
+3.Event: 'error'
+ The 'error' event may be emitted by a Readable implementation at any time
+Typically, this may occur if the underlying stream is unable to generate data due to an underlying internal failure, or when a stream implementation attempts to push an invalid chunk of data.
+
+
+const fs = require('fs');
+const path = require('path');
+
+const fileName = path.join(__dirname, 'assets/info.txt');
+const options = {
+    encoding: 'UTF-8'
+}
+
+const inputStream = fs.createReadStream(fileName, options);
+
+//listen for event
+
+//data event is emitted by os for each chunk of data
+let data = ''
+inputStream.on('data', chunk => {
+    console.log(`Received ${chunk.length} bytes of data.`)
+    data += chunk;
+})
+//end event is called , no more chunk of data is availble.
+inputStream.on('end', () => {
+    console.log('There will be no more data to read!');
+    console.log(data);
+})
+
+//error event: for error handling
+inputStream.on('error', err => {
+    console.log(`Some thing went wrong! ${err}`)
+});
+.............................................................................................
+
+const fs = require('fs');
+const path = require('path');
+const { log } = console;
+
+const fileName = path.join(__dirname, 'assets/big.file');
+const config = {
+    encoding: 'UTF-8'
+}
+const inputStream = fs.createReadStream(fileName, config);
+
+//data event is emitted by os for each chunk of data
+let data = ''
+inputStream.on('data', chunk=> {
+    log(`Received ${chunk.length} bytes of data.`)
+    data += chunk;
+})
+
+//end event is called , no more chunk of data is availble.
+inputStream.on('end', () => {
+    log('There will be no more data to read!');
+    log(data);
+})
+
+//error event: for error handling
+inputStream.on('error', err => {
+    log(`Some thing went wrong! ${err}`)
+});
+..............................................................................................
+/////////////////////////////////////////////////////////////////////////////////////////////
+				BackPressure
+.............................................................................................
+
+
+Backpressure:
+Problems when you do read and write together
+
+1. In general read operation is faster than write operation
+
+
+Back Pressure means inputstream is fast, outputstream slow, then data will be
+lost.
+
+
+How to handle back pressure?
+
+ apis  : pause,resume
+	 drain event
+
+pause : to close the upstream, not to emit data
+resume : to open the open upstream , to emit data
+
+drain event: if drain event is called.
+
+
+const fs = require('fs');
+const path = require('path');
+
+const inputfileName = path.join(__dirname, 'assets/big.file');
+const outputfileName = path.join(__dirname, 'assets/bigcopy.file');
+
+const config = {
+    encoding: 'UTF-8'
+}
+
+//Back pressure handling
+const readerStream = fs.createReadStream(inputfileName, config);
+const writeStr = fs.createWriteStream(outputfileName, config);
+
+readerStream.on('data', function (chunk) {
+    console.log(`Received ${chunk.length} bytes of data.`);
+    let buffer_good = writeStr.write(chunk);
+    if (!buffer_good) readerStream.pause();
+});
+
+writeStr.on('drain', function () {
+    console.log('buffer drained!');
+    readerStream.resume();
+});
+readerStream.on('end', function () {
+    //console.log(data);
+});
+
+readerStream.on('error', function (err) {
+    console.log(err.stack);
+});
+.............................................................................................
+
+Back Pressure using Pipe Method:
+
+const fs = require('fs');
+const path = require('path');
+
+const inputfileName = path.join(__dirname, 'assets/big.file');
+//write
+const outputFileName = path.join(__dirname, 'assets/bigcopy.file');
+
+const config = {
+      encoding: 'UTF-8'
+}
+
+//Back pressure handling
+const readerStream = fs.createReadStream(inputfileName, config);
+const writeStr = fs.createWriteStream(outputFileName, config);
+
+//backPressure streams
+//pipe method is simplest method which wraps resume,pasuse,drain 
+readerStream.pipe(writeStr);
+.............................................................................................
+
+..............................................................................................
+			        HTTP Programming
+.............................................................................................
+
+How to build non blocking webservers and webapps?
+
+You can create webservers and on which you can deploy apps, unlike traditional webserver model
+where webserver is separate, and app is different.
+
+Node invented for building network io applications.
+
+Network implementation in non blocking:
+
+HTTP module is used to build http server,app, deployment
+
+
+HTTP modules objects:
+
+
+1.Server
+  Server object is used to implement http servers/web containers
+2.ServerResponse
+  Object is used to send data 
+3.ClientRequest
+   Request object is used to handle http client requests
+4.IncommingMessage
+   Represents message payloads.
+
+
+Note: all http implemnetation is streaming powered by default.
+
+
+Steps:
+
+1.create Server.
+2.request-response handling
+3.starting server
+
+
+
+const http = require('http');
+
+//create server and handle client request
+
+const server = http.createServer((req, res) => {
+      res.write('Hello Node HTTP server')
+      res.end();
+})
+
+//start webserver
+server.listen(3000,()=>{
+    console.log(`HTTP Server is Running`);
+});
+//////////////////////////////////////////////////////////////////////////////////////////
+
+HTTP Events:
+-response events
+-request events
+-server events
+
+const http = require('http');
+
+//create server and handle client request
+
+const server = http.createServer((req, res) => {
+    res.write('Hello Node HTTP server')
+    res.end();
+    //attach response events
+    res.on('close', () => {
+        console.log('response closed')
+    })
+    res.on('finish', () => console.log('response finish event is called'))
+
+})
+
+//start webserver
+server.listen(3000, () => {
+    console.log(`HTTP Server is Running`);
+});
+
+//server events
+server.on('request', (req, res) => {
+    console.log('New Request has come ' + new Date())
+});
+............................................................................................
+-npm,express,microservices
+
+
+
+
+
+
+
+
+
+
 
 
 
