@@ -2136,14 +2136,903 @@ server.on('request', (req, res) => {
     console.log('New Request has come ' + new Date())
 });
 ............................................................................................
--npm,express,microservices
+
+How to read data from client?
+const http = require('http');
+
+//create server and handle client request
+
+const server = http.createServer((req, res) => {
+
+    let data = '';
+    req.on('data', chunk => {
+        data += chunk
+        console.log(data);
+    });
+    req.on('end',()=>{
+        res.write(data)
+        res.end();
+    })
+    //attach response events
+    res.on('close', () => {
+        console.log('response closed')
+    })
+    res.on('finish', () => console.log('response finish event is called'))
+
+})
+
+//start webserver
+server.listen(3000, () => {
+    console.log(`HTTP Server is Running`);
+});
+
+//server events
+server.on('request', (req, res) => {
+    console.log('New Request has come ' + new Date())
+});
+..............................................................................................
+
+How to send Json?
+
+const http = require('http');
+const TODOS = require('./mock-data/todo');
+
+//create server and handle client request
+
+const server = http.createServer((req, res) => {
+
+    res.writeHead(200, {
+        'Content-Type': 'application/json'
+    })
+    res.write(JSON.stringify(TODOS));
+    res.end();
+    //attach response events
+    res.on('close', () => {
+        console.log('response closed')
+    })
+    res.on('finish', () => console.log('response finish event is called'))
+
+})
+
+//start webserver
+server.listen(3000, () => {
+    console.log(`HTTP Server is Running`);
+});
+
+//server events
+server.on('request', (req, res) => {
+    console.log('New Request has come ' + new Date())
+});
+
+.............................................................................................
+const http = require('http');
+const { findAllAsyncPromise } = require('./services/todo.service');
+
+const server = http.createServer(async (req, res) => {
+    // findAllAsyncPromise()
+    //     .then(todos => {
+    //         res.writeHead(200, {
+    //             'Content-Type': 'application/json'
+    //         })
+    //         res.write(JSON.stringify(todos))
+    //         res.end();
+    //     })
+    //     .catch(err => {
+    //         res.writeHead(200, {
+    //             'Content-Type': 'application/json'
+    //         })
+    //         res.write(JSON.stringify({ message: 'Todos not found' }))
+    //         res.end();
+    //     })
+
+    try {
+        const todos = await findAllAsyncPromise();
+        res.writeHead(200, {
+            'Content-Type': 'application/json'
+        })
+        res.write(JSON.stringify(todos))
+        res.end();
+
+    }
+    catch (err) {
+        res.writeHead(200, {
+            'Content-Type': 'application/json'
+        })
+        res.write(JSON.stringify({ message: 'Todos not found' }))
+        res.end();
+    }
+
+})
+
+//start webserver
+server.listen(3000, () => {
+    console.log(`HTTP Server is Running`);
+});
+
+//server events
+server.on('request', (req, res) => {
+    console.log('New Request has come ' + new Date())
+});
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+HTTP Method Mapping -GET,POST,DELETE,PUT
+HTTP URI Pattern to Match Resources -  /api/customers ,/api/customers/id
+
+if you want to build restfull applications using http module alone is very complex , because we need to take care of method mapping,url mapping and biz logic.
+
+so we need framework /lib to abstract away all complex  work flows- just focus biz logic.
+
+That is birth of http frameworks from node js - express.js,happi.js,loopback
+
+
+if i want to use any lib/framework inside node , we need to learn one more concept- NPM
+
+..............................................................................................
+				  NPM - Node Package Manger
+..............................................................................................
+
+
+npm is tool is used to distribute node modules to others
+and you can get node modules from other others.
+
+npm tool is distributed along with node installation
+
+npm uses public repository server called npmjs.com npmjs.org
+
+tools and libs,frameworks all are distributed as node modules into repository.
+..............................................................................................
+				Javascript Apps
+
+
+Javascripts apps could be server-side apps like web apps,webservices,microservices, client side apps angular,react,vue, mobile apps ......
+
+There is common structure which is defined by npm.
+
+The Project will have 
+
+1.package.json file
+   meta file which describes the project information
+2.node_modules folder
+  which contains libs/frameworks/tools code.
+
+From where we can get libs/frameworks code?
+  We have repository npmjs.com
+
+create package.json file
+
+>npm init
+
+{
+  "name": "nodeapps",
+  "version": "1.0.0",
+  "description": "This is node and npm project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
+..............................................................................................
+package Types:
+
+1.public package
+  react
+2.private package 
+  @angular - @-npm private 
+
+
+npm is used
+
+to install,uninstall,publish node modules from node repo / into node repo.
+
+if you install third party modules , into your project, node distributes npm tool ,using this you can install,uninstall,upgrade node modules.
+.............................................................................................
+npm is used
+
+to install,uninstall,publish node modules from node repo / into node repo.
+
+if you install third party modules , into your project, node distributes npm tool ,using this you can install,uninstall,upgrade node modules.
+.............................................................................................
 
 
 
+installing module:
+
+>npm install  moduleName  --options
+>npm i moduleName --options
+
+
+>npm install module 
+  here no option is told, means default option is --save
+>npm i module
+
+options:
+ --save 
+ --save-dev
+ --production
+ -g
+
+How to install lodash?
+
+npm install lodash --save
+npm install lodash 
+
+Types of Software Dev:
+
+1.Development
+2.Testing
+3.Production
+
+During dev, if you are using unit testing libs in case of java - junit.jar, but i dont need junit.jar in production env.
+
+if you are using jdbc drivers, necessary in dev and production.
+
+--save : 
+   if you install any module with this flag, meaning that module should be used dev and production - both env
+
+--save-dev
+   if you install any module with this flag, meaning that module should be used only in dev cycle.
+
+--production
+    if you install with this flag, during application packing , all --save-dev modules will be removed.
+
+-g :
+   global modules- which is not installed inside project/app as dependancy.
+  tools,cli ,compilers,webservers.....
+
+
+How to use lodash?
+
+
+npm i --save lodash
+
+package.json
+
+{
+  "name": "mynodeapp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "lodash": "^4.17.21"
+  }
+}
+
+index.js
+const _ = require('lodash')
+
+console.log(_.sum([1,2,3]))
+.............................................................................................
+Development only dependency:
+
+--save-dev
+
+What could be dev only dependency?
+
+-Unit Testing libs and frameworks
+-compilers
+-tools
+-build systems like webpack
+
+Unit Testing libs and frameworks:
+
+-chai
+
+npm i chai --save-dev
+
+{
+  "name": "mynodeapp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "chai": "^4.3.4"
+  }
+}
+..........................................................................................
+
+How to move the app to production?
+
+-should not move your app with dev dependencies
+-should copy the application with node_modules folder
+-should copy only the app code and package.json file
+
+How to do that?
+
+-Using npm tool itself
+-Using build tools like web pack,rollpack.
+
+
+-Using npm tool itself
+
+npm install --production
+ - if you run this command, npm will skip entries from "devdependencies".
+.............................................................................................
+
+Global Modules:
+
+npm install module -g --global
+
+npm i module -g
+
+
+Why Global Modules:
+
+ -Tools
+   compilers,webservers,build tools,testing runtime, framework runtime, cli tools for project    creations.
+
+C:\Users\sasub\AppData\Roaming\npm -- here only all global modules will be installed.
+
+Demo:
+....
+
+npm install module-name(tool) -g
+
+mocha : unit testing framwork, is used to run java script unit testing on node and browser.
+
+npm install --global mocha
+
+mocha : unit testing framwork, is used to run java script unit testing on node and browser.
+
+npm install --global mocha
+npm install -g mocha
+Steps:
+
+create test folder
+ test
+create spec file
+test
+  -demo.spec.js
+var assert = require('assert');
+describe('Array', function() {
+  describe('#indexOf()', function() {
+    it('should return -1 when the value is not present', function() {
+      assert.equal([1, 2, 3].indexOf(4), -1);
+    });
+  });
+});
+
+var assert = require('chai').assert
+  , foo = 'bar'
+  , beverages = { tea: [ 'chai', 'matcha', 'oolong' ] };
+
+assert.typeOf(foo, 'string'); // without optional message
+assert.typeOf(foo, 'string', 'foo is a string'); // with optional message
+assert.equal(foo, 'bar', 'foo equal `bar`');
+assert.lengthOf(foo, 3, 'foo`s value has a length of 3');
+assert.lengthOf(beverages.tea, 3, 'beverages has 3 types of tea');
+
+C:>mocha
+
+
+  Array
+    #indexOf()
+      √ should return -1 when the value is not present
+
+
+  1 passing (8ms)
+............................................................................................................................................................................................
+				Automation
+.............................................................................................
+
+How to use javascript for automation?
+
+
+We can automate js applications.
+
+write all auotomation steps inside scripts
+
+ "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+
+
+How to run node applications?
+
+1.node folderName/filename.js
+
+2.npm start
+via script
+how to run script
+
+>npm commandname ---incase of built in command
+>npm start
+
+>npm run commandname - custom commands
+>npm run subu
+
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start" : "node src/app.js",
+    "subu"  :"node src/app.js "
+  },
+
+npm test
+npm start
+npm run subu
+.......................................................................................//////////////////////////////////////////////////////////////////////////////////////////////	
+				Scripts and Global Module
+..............................................................................................
+
+Scripts and Global Module:
+
+-Global modules are used for tooling purpose like compilers,build tools,servers,test runners(mocha).
+
+Globals has some issues:
+
+1.version and compablity issue for new projects
 
 
 
+Steps:
 
+1.npm uninstall mocha -g
+
+2.>mocha --help
+'mocha' is not recognized as an internal or external command,
+operable program or batch file.
+
+3.install mocha locally
+
+ npm install mocha --save-dev
+
+4.>mocha
+'mocha' is not recognized as an internal or external command,
+operable program or batch file.
+
+Why i am getting error?
+  because mocha is command, we cant run directly.
+
+5.solution is run via scripts
+
+package.json
+"scripts": {
+    "test": "mocha",
+    "start": "node src/index.js",
+    "subu": "node src/index.js"
+  }
+
+npm test
+
+> nodeapps@1.0.0 test C:\session\ibm\2021\june\nodemicroservices\nodeapps
+> mocha
+
+
+
+  Array
+    #indexOf()
+      √ should return -1 when the value is not present
+
+
+  1 passing (6ms)
+..............................................................................................
+				  Third Party Module
+			        Frameworks - Express.js
+..............................................................................................
+
+
+
+How to build enterprise node apps?
+
+Frameworks:
+
+Web Apps:
+
+1.Express.js
+
+Fast, unopinionated, minimalist web framework for Node.js
+
+express is built on top of http core module.
+
+
+
+What apps can be built using express?
+
+
+1.RESTFull WebServices
+
+2.Dynamic content generation apps -  spring mvc, .netmvc.   with ui
+
+
+Core features of Express:
+
+1.Abstraction on core http module
+2.lot of apis to send data like json api
+3.routers : to create HTTP based web services and apps quickly.
+4.middlewares : to extend core framework like - logging,database,security,templates...
+
+
+
+Objects in express
+
+1.Application
+  We call Container object which other objects
+  entry and exit of an application
+  application is created by calling function
+
+2.Request
+
+3.Response
+
+4.Router
+
+
+1.Application object roll:
+
+-Routing HTTP requests
+-Configuring middleware
+-Rendering HTML views
+-Registering a template engine
+
+...........................................................................................
+
+How to create simple express app?
+
+const express = require('express');
+//console.log(express)
+
+//create Application Object
+const app = express();
+
+//Routing : request Handling
+
+app.get('/', (req, res) => {
+    res.end('Home')
+})
+
+//start server
+app.listen(3000, () => {
+    console.log('express server is running!!');
+})
+
+Request Handling with Http Methods and url pattern
+const express = require('express');
+const app = express();
+
+app.get('/', (req, res) => {
+    res.end('Home')
+})
+
+//end points
+app.get('/api/greet',(req,res)=>{
+    res.end('greet')
+})
+
+app.get('/api/hello',(req,res)=>{
+    res.end('hello')
+})
+app.get('/api/hai',(req,res)=>{
+    res.end('hai')
+})
+
+app.post('/api/greet',(req,res)=>{
+    res.end('greet -post')
+})
+
+app.put('/api/greet',(req,res)=>{
+    res.end('greet -put')
+})
+
+app.delete('/api/greet',(req,res)=>{
+    res.end('greet -delete')
+})
+//start server
+app.listen(3000, () => {
+    console.log('express server is running!!');
+})
+
+............................................................................................
+
+JSON Data:
+..........
+
+const express = require('express');
+const { findAll } = require('./services/todo.service')
+//create Application Object
+const app = express();
+
+//Routing : request Handling
+
+app.get('/', (req, res) => {
+    res.end('Home')...........
+})
+
+app.get('/api/todos', async (req, res) => {
+    try {
+        const todos = await findAll();
+        res.json(todos);
+    }
+    catch (err) {
+        res.json({ err: err })
+    }
+
+});
+
+
+//start server
+app.listen(3000, () => {
+    console.log('express server is running!!');
+})
+...............................................................................................
+
+const express = require('express');
+const { findAll } = require('./services/todo.service')
+//create Application Object
+const app = express();
+
+//Routing : request Handling
+
+app.get('/', (req, res) => {
+    res.end('Home')
+})
+
+app.get('/api/todos', async (req, res) => {
+    try {
+        const todos = await findAll();
+        res.json(todos);
+    }
+    catch (err) {
+        res.json({ err: err })
+    }
+
+});
+app.post('/api/todos/create', (req, res) => {
+
+    let todo = '';
+    req.on('data', chunk => {
+        todo += chunk
+
+    })
+
+    req.on('end', async () => {
+        try {
+            console.log(todo);
+            //how to send status code and response
+            res.status(201).location("/api/todos/create").json({ message: 'Todo Created'})
+
+        }
+        catch (error) {
+            res.status(404).json({ message: error })
+        }
+    });
+
+});
+
+
+
+ - plugins , can  be plugged into app - features adding
+
+
+types of middlewares
+
+1.built in middlewares
+2.third party middlewares
+3.custom middlewares.
+
+
+
+Use case :
+ How to read JSON input. Express server need to read json which was submitted by endusers 
+User will submit as json --- express need to convert into javascript object.
+
+Without Middleware :
+
+1.we need to register data, end event for reading input
+2.we need to convert input into javascript object - JSON.parse()
+
+
+app.post('/api/todo', async (req, res) => {
+
+    let todo = '';
+    req.on('data', chunk => {
+        todo += chunk
+    })
+    
+    req.on('end', async() => {
+        try {
+            console.log(todo)
+            const todos = await create(todo);
+            res.status(201).location("/api/todo").json({ message: 'Todo Created' })
+        }
+        catch (error) {
+            res.status(500).json({ message: error })
+        }
+    });
+
+})
+
+With Middleware :
+
+-any middleware is simple javascript module/package only.
+-most of the middlewares are community driven.
+-if you want any middleware you need to install  
+
+https://expressjs.com/en/resources/middleware.html
+
+body-parser
+Node.js body parsing middleware.
+
+Parse incoming request bodies in a middleware before your handlers, available under the req.body property.
+
+Parsers supported by body-parser Middleware:
+.............................................
+
+This module provides the following parsers:
+
+1.JSON body parser
+2.Raw body parser
+3.Text body parser
+4.URL-encoded form body parser
+
+//start server
+app.listen(3000, () => {
+    console.log('express server is running!!');
+})
+
+Steps:
+
+1.install middleware
+$ npm install body-parser
+
+2.Any Middleware must be registered with Application Object.
+in order to activate middleware.
+
+app.use(middleware)
+
+const express = require('express');
+const { findAll } = require('./services/todo.service')
+const bodyParser = require('body-parser')
+const morgan = require('morgan')
+const fs = require('fs')
+const path =require('path');
+
+
+
+const app = express();
+
+
+// create a write stream (in append mode)
+const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
+
+// setup the logger
+app.use(morgan('combined', { stream: accessLogStream }))
+//Register Middleware: bodyParser
+//Register middlewares
+app.use(bodyParser.json())
+
+
+///
+app.get('/', (req, res) => {
+    res.end('Home')
+})
+
+app.post('/api/todos/create', (req, res) => {
+
+    try {
+        const payload = req.body;
+        console.log(payload)
+        res.status(201).location("/api/todos/create").json({ payload })
+    }
+    catch (error) {
+        res.status(500).json({ message: error })
+    }
+});
+
+
+//start server
+app.listen(3000, () => {
+    console.log('express server is running!!');
+})
+..............................................................................................
+				   Routing
+..............................................................................................
+
+const express = require('express');
+const app = express();
+
+
+app.get('/', (req, res) => {
+    res.end('Home')
+})
+
+//Resource Greeter
+
+app.get('/api/greeter/list',(req,res)=>{
+    res.end('greeter-list')
+})
+
+app.get('/api/greeter/create',(req,res)=>{
+    res.end('greeter-save')
+})
+//Resource todo
+app.get('/api/todos/list',(req,res)=>{
+    res.end('todos list')
+})
+app.get('/api/todos/create',(req,res)=>{
+    res.end('todos list')
+})
+app.listen(3000, () => {
+    console.log('express server is running!!');
+})
+
+
+
+if you look this code, we have to break into modules and separate out with routing.
+
+............................................................................................
+				Routing
+
+src/app.js
+
+const express = require('express');
+const greeterRouter = require('./routers/greeter.router');
+const todoRouter = require('./routers/todo.router')
+
+const app = express();
+
+//register routers with app 
+
+app.use('/api/greeter', greeterRouter);
+app.use('/api/todos', todoRouter);
+
+
+
+app.get('/', (req, res) => {
+    res.end('Home')
+})
+
+app.listen(3000, () => {
+    console.log('express server is running!!');
+})
+
+src/routers/todo.router.js
+
+const express = require('express');
+//create Router Object
+const todoRouter = express.Router()
+
+
+//Resource todo
+todoRouter.get('/list',(req,res)=>{
+    res.end('todos list')
+})
+todoRouter.get('/create',(req,res)=>{
+    res.end('todos save')
+})
+module.exports =todoRouter;
+
+src/routers/greter.router.js
+
+const express = require('express');
+//create Router Object
+const greeterRouter = express.Router()
+
+//Resource Greeter
+
+greeterRouter.get('/list', (req, res) => {
+    res.end('greeter-list')
+})
+
+greeterRouter.get('/create', (req, res) => {
+    res.end('greeter-save')
+})
+
+module.exports = greeterRouter;
+...........................................................................................
 
 
 
