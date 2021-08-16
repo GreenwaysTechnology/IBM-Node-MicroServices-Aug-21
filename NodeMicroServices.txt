@@ -3033,6 +3033,1118 @@ greeterRouter.get('/create', (req, res) => {
 
 module.exports = greeterRouter;
 ...........................................................................................
+				Micro Services
+..........................................................................................
+
+What is Micro Service?
+
+Way of building distributed application.
+
+Distributed App history and types:
+
+1.IBM MainFrame based distributed app from 1970.
+2.Client -Server - based on main frame and later micro computers.
+3.Tiers of client -server
+4. single tier client server
+5.two tier client server
+6.three tier client server
+
+7.web based client server 
+   Three or N client server
+
+N tier web based client server architecture : Monolothic Architecture.
+
+Technology stack could java(jee),.notdet,php........
+
+
+How to build ,test,deploy monolithic client server distribute app?
+
+-Technology first J2EE, Domain Next.
+
+Team: OMS - PM- More PLS
+1. DEV
+2. TESTING
+3. RELEASE
+4. OPERATIONS
+
+Project work flow
+
+1.Req
+2.Design
+   High Level-UML,Database
+   Low level - Runtime,databases,tools......
+3.coding
+
+-Vendor-lock in : Mono-lithic
+   -DEV,TESTING,PRODUCTION.
+-Work flow is highly sequencial
+   Req -Complete
+   Dev
+   testing
+   Release
+   Production
+  Delay in delivery:Cost increased
+-Production cost was huge
+
+Data Centers
+ -need to purchase high powered servers - bare metal servers
+ 
+Cost:
+   -Hardware
+   -OS -Linux-Ubuntu
+   -Tools -Servers,databases etc....
+   -Matrix Hell -  Mapping software components in dev and Production..
+
+How to build enterprise jee based app.
+
+App  must support a variety of different clients including desktop browsers. 
+
+The application might also expose an API for 3rd parties to consume.
+
+It might also integrate with other applications via a message broker. 
+
+The application handles requests (HTTP requests and messages) by executing business logic; 
+
+accessing a database; 
+exchanging messages with other systems;
+
+and returning a HTML/JSON/XML response. 
+
+There are logical components corresponding to different functional areas of the application.
+
+............................................................................................
+
+IF App needs to talk to external systems like Message Brokers, other Systems like Main frames.
+
+RPC/RPI
+MOM
+Connectors Arch.
+
+BIZ LOGIC:
+
+1- Service Layer : isloate service layer into separate component
+
+ can be inside one app - one layer, that layer may run on different jvms -  distributed Arch.
+
+
+Layer :
+
+ Client ---- Web Layer  ----Service Layer ---- Repository Layer
+
+////////////////////////////////////////////////////////////////////////////////////////////
+
+Packaging Model:
+ 
+WAR - Web archive
+EAR .
+
+Problems with Single JAR/WAR:
+
+1. Scalability
+ Vertical scablitity
+ Horzitional scability 
+
+2.Deployments
+    -Bare Metal Deployment
+
+////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////
+Monoloith distributed app development drabackbacks:
+
+-Time is taken for project delivery
+   -Requirements 
+   -High level design and low level design
+   -coding
+   -testing
+   -release
+   -production- live
+
+-Technology Stack and Vendor lock in
+   -You need to build the entire app using one technology or one vendor product
+    eg: J2EE, Oracle,Weblogic
+
+-Production and maintance cost
+  -You need to setup large data centers , you need to maintain them.
+..............................................................................................
+
+    Companies like amzon,netflix,google wanted to change the app development model.
+                                "Micro services"
+
+
+Micro services are architural model of req,dev,test,relase,production,maintaince different ways.
+    Continous req collecting
+    Continous dev
+    Continuous testing
+    Continuous release
+    Continuous deployment
+    Using rented data centers: Cloud
+
+-Domain First, Technology Next: Domain Driven Design.
+-No Vendor lock- Multi tech stack.
+-Indidual dev , deployment - orders is development ,tested,deployed,customers are developed,tested deployment.
+   -Parrel dev.
+-Automation -dev ops
+   release - CI 
+   deployment - Containerized - Docker..
+-Introduction of Cloud computing
+..............................................................................................
+..............................................................................................
+
+                                  Micro Services Design Pattern
+..............................................................................................
+
+Implementation Patterns:
+........................
+
+1.DOMAIN Models
+  Decompose by biz features
+  Decompose by sub domains
+
+2.Development
+  -Object oriented Design
+ Class
+      -Represent something in domain eg :Order,Customer
+ Service
+     -Offerings : giving something to somebody.
+   A Program offers something - Data
+
+Services can be broken into smllar and smallar based on domains
+   Telecom domain :
+       Telecommunication Services
+		-Data Service
+			- Mobile data
+			- Broad Band
+			    -Fiber
+                            -leased Line
+    
+    FiberOpticService
+        -getSpeed - 
+        -increaseSpeed-
+        -getNewConnection-
+        -disconnectExisingConnection() 
+        -payBills()    
+
+   BillingService
+	generateBill
+	processPayment
+	sendBill
+        adjustBill
+  
+   How to design a Service? 
+	USING SOLID Principles
+
+  Single-responsibility principle -SRP
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+Service Communications:
+ 
+   Two Domains are going to collbrate each other to carry a biz transaction.
+
+
+In Micro Services
+
+
+FiberOpticService
+     is 
+   Running 
+     inside
+ One Application
+       |
+     Runtime
+       |
+  VM -Container
+
+      OS
+ 
+     |
+     |   data
+     |
+
+Billing is Running
+     is 
+   Running 
+     Another
+ One Application
+      |
+     Runtime
+       |
+  VM -Container
+
+      OS
+
+Class ----will become  Objects
+
+Object Communication === Service Communication
+
+
+
+-SAME JVM(Runtime)
+  Calling methods from one object(FiberDataService) to another object (BillingService).
+-Different Runtime(JVM)
+   -Networks - Protocals
+    RestFull
+      -HTTP 
+   -RPC/RIP
+	-ORB
+        -RMI
+        -gRpc
+   -MOM - Message Brokers
+        RabbitMQ
+	Kaffka
+	etc...
+   -Event Bus
+	-TCP
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+Sevices Are Eagar or Lazy:
+.........................
+ 
+
+Eagar Service expects data immediatly.
+
+Service waits for data until it is received.The service cant continue other jobs ; 
+
+Sync Services
+
+Drawbacks:
+
+- Blocking 
+    It leads performance issues
+
+Service does not wait for data until it is received.The service t continue other jobs ; 
+
+Async Services
+
+Advantages
+ - Non Blocking
+    
+Async Services Implementation:
+..............................
+
+Two ways:
+
+1.Programmetic level 
+    -Netty,webflux,Quarkus,Moleculre
+
+2.Via Message Brokers
+    RabbitMQ,Kafka
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////////////////
+
+Service Failures:
+.................
+
+1.UnAvailability
+
+2.Timeout due to slow calls
+
+How to handle failures , how to return proper response to caller?
+
+Reliability Design patterns :fault tolerance 
+
+ -Circuit Breaker
+ -Bulk Head
+ -Rate Limiter
+ -Retry
+ -TimeLitmiter
+ -Cache
+
+///////////////////////////////////////////////////////////////////////////////////////////
+
+
+Service Communications in network and its Problems:
+...................................................
+
+Services are going to talk each other.
+
+If they want to talk, What services should know each other?
+
+ -Location
+     ip address
+
+In monolithic(traditional) deployment - ip address , ports are well known (hardcoded)
+but in containers/ cloud env which are highly dynamic.
+
+Where Micro services typically runs in a virtualized or containerized envs , locations are highly.
+
+Services need to be registered some where and others services will ask registered location, that , hey give me that service
+
+Service Registry and Discovery Pattern:
+.......................................
+Service Registry:
+  -database - stores service informations
+
+Service Discovery:
+  locating services from the service registry
+
+Types of Service discovery:
+ -Client Side Service Discovery
+ -Server Side Service Discovery
+.............................................................................................
+.............................................................................................
+
+Data Management :
+
+ A Service need to store data in data sources - Database
+  
+Database Per Service.
+
+ FiberOpticService
+Each service has its own schema. 
+you can have more than one tables per service
+
+Database: 
+  Collection of tables,views,other objects
+
+Shared Database:
+  Sharing db for more than one services .
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+Service Communication and Data Management
+
+How to implement Transactions In Microservices?
+
+It is very very difficult to implement and track transactions across multiple services.
+
+Transactional Designpattern:
+
+1.2PC  - 2 Phase Commit
+
+2.Saga
+    -EDA - Event Driven Architectures
+  Saga Implementation
+	-Choreography
+        -Orchestration
+//////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+
+                           Micro Services Management Patterns
+..........................................................................................
+
+1.Log Managements
+     Distributed/Centralized log management.
+ 
+Tools:
+   Graylog - mongodb,ES,Graylog
+   ELK Stack  - ES,Logstash,kibana
+   EFK Stack  - ES,Fluentd,Kibana
+
+
+2.Application Metrics
+     To monitor Application behaviours
+
+Tools:
+   Prometheus
+   AWS Cloud Watch
+
+3.Auditing
+    User auditing,application auditing - Performance
+    Record User activties in a databse
+
+4.Distributed Tracing /Tracking
+   If i want to track service calls
+    A -->B ---C -- Something
+   You can Track Exception Hierachies
+  
+ Open zipkin
+ Open Tracing
+
+5.Health Check Api
+    To test health of apis,infra components.
+
+ Some implemetations provides health endpoints where you can get helath metrics information
+that can be feed to tools 
+
+-Prometheus
+.............................................................................................
+				////////////////////////////////////////////////////////////////////////////////////////////
+				Micro Services - Implementations
+............................................................................................
+
+Microservices is langugage,platform,os independant. 
+
+Java:
+ -Spring Cloud
+ -Quarkus
+ -Light4J
+ -Vertx
+ etc...
+
+Javascript : nodejs
+
+-  Moleculer
+-  Seneca
+-  Loop back
+............................................................................................
+
+                 		Moleculer
+
+Progressive microservices framework for Node.js
+
+Moleculer is framework which has implemented most of common microservices design patterns.
+
+Moleculer features:
+
+1.Promise-based solution (async/await compatible)
+2.request-reply concept
+3.support event driven architecture with balancing
+4.built-in service registry & dynamic service discovery
+5.load balanced requests & events (round-robin, random, cpu-usage, latency, sharding)
+6.many fault tolerance features (Circuit Breaker, Bulkhead, Retry, Timeout, Fallback)
+7.plugin/middleware system
+8.support versioned services
+9.support Streams
+10.service mixins
+11.built-in caching solution (Memory, MemoryLRU, Redis)
+12.pluggable loggers (Console, File, Pino, Bunyan, Winston, Debug, Datadog, Log4js)
+13.pluggable transporters (TCP, NATS, MQTT, Redis, NATS Streaming, Kafka, AMQP 0.9, AMQP 1.0)
+14.pluggable serializers (JSON, Avro, MsgPack, Protocol Buffer, Thrift)
+15.pluggable parameter validator
+16.multiple services on a node/server
+17.master-less architecture, all nodes are equal
+18.parameter validation with fastest-validator
+19.built-in metrics feature with reporters (Console, CSV, Datadog, Event, Prometheus, StatsD)
+20.built-in tracing feature with exporters (Console, Datadog, Event, Jaeger, Zipkin)
+21.official API gateway, Database access and many other modules…
+
+.............................................................................................
+Moleculer setup:
+
+project creations;
+
+1.from begining like normal node application.
+2.moleculer cli- to setup realtime project with all artifacts.
+
+
+1.create project from scratch.
+
+create folder
+
+mkdir microserviceapp
+
+cd microservices/mkdir services
+
+npm init
+npm install moleculer
+.............................................................................................
+				Moleculer Architecture and Core concepts
+.............................................................................................
+
+1.Service:
+  A Service is a simple java script module containing some part of a complex application.
+  eg: UserService - contains information about users -  findAll users,save user,findBy,delete,update.
+ It is isloated and self contained from the whole application, every service independant, meaning that even if the service goes offline or crashes the remaining services would be unaffected.
+
+2.Node
+   A node is simple os process(noderuntime). node may run local machine or external network.
+   On a node one or more services are running.
+
+3.Service Broker
+   Service Broker is heart of moleculer.
+   Service Broker is runtime for moleculer apps.
+   Service Broker provides all infrastructure components - like    servicediscovery,loadbalancer,network transporters,message bus .... 
+
+4.Transporter
+   Transporter is communication bus that services are used to communicate across the network
+   It can transfer message,events,request,response....
+
+5.GateWay
+    API Gateway exposes exposes moleculer services to end users.
+   if external system/users who can communicate moleculer micro service apps via gate way only.
+
+
+Services:
+
+1.HTTP services
+   Services are exposed for outsideworld - RestFull api
+
+2.Back end services
+   Services are used to encasulate biz logics like database operations,any biz
+
+
+
+service names and file names:
+
+math.service.js
+hello.service.js
+
+
+const { ServiceBroker } = require('moleculer');
+
+//create broker object
+const broker = new ServiceBroker();
+
+//create service
+//service takes service schema as parameter
+broker.createService({
+    name: 'hello',
+    actions: {
+        //biz methods- service methods
+        sayHello() {
+            return 'Hello Moleculer!'
+        }
+    }
+})
+
+//thenable pattern
+function main() {
+    broker.start()
+        .then(() => {
+            console.log('broker is ready')
+            //call service 
+            broker.call('hello.sayHello').then(res => {
+                console.log(res);
+            })
+                .catch(err => {
+                    console.log(err);
+                });
+        })
+        .catch(err => console.log(err))
+}
+///async and await
+async function init() {
+
+    try {
+        await broker.start()
+        const res = await broker.call('hello.sayHello')
+        console.log(res);
+    }
+    catch (err) {
+        console.log(err);
+    }
+
+}
+//main();
+init();
+.............................................................................................
+
+multi methods and multiple services
+....................................
+
+const { ServiceBroker } = require('moleculer');
+
+//create broker object
+const broker = new ServiceBroker();
+
+broker.createService({
+    name:'greeter',
+    actions: {
+        //multiple methods
+        sayHello(){
+           return 'Hello'
+        },
+        sayHai() {
+            return 'Hai'
+        }
+    }
+})
+
+broker.createService({
+    name:'users',
+    actions: {
+        //multiple methods
+        findAll(){
+           return 'Users-all'
+        },
+        findById() {
+            return 'Users by id'
+        }
+    }
+})
+async function init() {
+
+    try {
+        await broker.start()
+        const hello = await broker.call('greeter.sayHello')
+        const hai = await broker.call('greeter.sayHai')
+        const findAll = await broker.call('users.findAll')
+        const findById = await broker.call('users.findById')
+
+        console.log(hello,hai,findAll,findById);
+    }
+    catch (err) {
+        console.log(err);
+    }
+
+}
+//main();
+init();
+............................................................................................
+
+actions:
+  Are used to represent methods.
+
+Methods can be represented in two ways:
+
+Way -1:
+actions : {
+ 
+  sayHello(){
+     return 'hello'
+  }
+
+}
+
+Way-2: you can add meta information to a methods
+
+meta informations will discuss later.
+
+actions: {
+  
+  sayHello: {
+    
+       handler(){
+          
+          return 'Hello'
+           
+       } 
+  }
+
+} 
+
+broker.createService({
+    name: 'orders',
+    actions: {
+
+        findAll: {
+            //handler
+            handler() {
+                return 'Orders'
+            }
+        },
+        create: {
+            //handler
+            handler() {
+                return 'Orders create'
+            }
+        }
+    }
+})
+
+async function init() {
+
+    try {
+        await broker.start()
+        const hello = await broker.call('greeter.sayHello')
+        const hai = await broker.call('greeter.sayHai')
+        const findAll = await broker.call('users.findAll')
+        const findById = await broker.call('users.findById')
+        const orderFindall = await broker.call('orders.findAll')
+
+        console.log(hello, hai, findAll, findById,orderFindall);
+    }
+    catch (err) {
+        console.log(err);
+    }
+
+}
+//main();
+init();
+..............................................................................................
+
+
+
+broker.createService({
+    name: 'hello',
+    actions: {
+        sayHello(ctx) {
+            return 'Hello Service'
+        }
+    }
+})
+
+const hello = await broker.call('hello.sayHello',{name:'Subramanian'})
+
+-Parameters must be encapsulated inside object only - {name:'subramanian'}
+
+-Args must be received via one Object called "Context" Object
+
+Context :
+
+-it is proxy object for broker meaning that, similar broker.
+-Most of the broker features are availble inside context object
+-Context objects are created by moleculer automatically.
+-We can grab context object reference inside actions method args
+-Using context 
+   -read parameters - ctx.params
+   -you can call other service methods -  service communication. ctx.call
+   -if you want to access broker information  inside service
+
+const { ServiceBroker } = require('moleculer');
+
+//create broker object
+const broker = new ServiceBroker();
+
+broker.createService({
+    name: 'greeter',
+    actions: {
+        //biz methods- service methods
+        sayHello(ctx) {
+            console.log(ctx.params)
+            return `Hello ${ctx.params.name}`
+        },
+        sayGreet: {
+            handler(ctx) {
+                const { name,message } = ctx.params;
+                // return `Greet ${ctx.params.name}`
+                return `${message} ${name}`;
+            }
+        }
+    }
+})
+///async and await
+async function init() {
+
+    try {
+        await broker.start()
+        const res = await broker.call('greeter.sayHello', { name: 'Subramanian' })
+        const greet = await broker.call('greeter.sayGreet', { name: 'Subramanian',message:'Hai' })
+
+        console.log(res,greet);
+    }
+    catch (err) {
+        console.log(err);
+    }
+
+}
+init();
+............................................................................................
+				 Service Communication
+..........................................................................................
+	
+Types of services:
+
+1.Back End Services
+2.Http Services
+
+Two types of services based on communication.
+1.local service
+
+2.remote service
+
+Back End Service Communication:
+...............................
+1.local service : 
+
+ if services are running on single /same node/single broker - local services
+
+
+const { ServiceBroker } = require('moleculer');
+
+//create broker object
+const broker = new ServiceBroker();
+
+//math service
+broker.createService({
+    name: 'math',
+    actions: {
+        add: {
+            handler(ctx) {
+                const { a, b } = ctx.params
+                //call adder service
+                return ctx.call('adder.addNumbers', { a: a, b: b })
+            }
+        }
+    }
+})
+
+
+//adder service
+broker.createService({
+    name: 'adder',
+    actions: {
+        addNumbers: {
+            handler(ctx) {
+                const { a, b } = ctx.params
+                return a + b;
+            }
+        }
+    }
+})
+async function init() {
+
+    try {
+        await broker.start()
+        const res = await broker.call('math.add', { a: 10, b: 20 })
+        console.log(res);
+    }
+    catch (err) {
+        console.log(err);
+    }
+
+}
+init();
+..............................................................................................
+				Params Validation -Moleculer uses validation framework
+.............................................................................................
+
+const { ServiceBroker } = require('moleculer');
+
+//create broker object
+const broker = new ServiceBroker();
+
+//math service
+broker.createService({
+    name: 'math',
+    actions: {
+        add: {
+            //meta information: validation
+            params: {
+                a: 'number',
+                b: 'number'
+            },
+            handler(ctx) {
+                const { a, b } = ctx.params
+                //call adder service
+                return ctx.call('adder.addNumbers', { a: a, b: b })
+            }
+        }
+    }
+})
+
+
+//adder service
+broker.createService({
+    name: 'adder',
+    actions: {
+        addNumbers: {
+            params: {
+                a: 'number',
+                b: 'number'
+            },
+            handler(ctx) {
+                const { a, b } = ctx.params
+                return a + b;
+            }
+        }
+    }
+})
+async function init() {
+
+    try {
+        await broker.start()
+        const res = await broker.call('math.add', { a: 10, b: 20 })
+        console.log(res);
+    }
+    catch (err) {
+        console.log(err);
+    }
+
+}
+init();
+............................................................................................
+REPL: READ Evaulate Print Loop:
+- interactive command line tool, used for testing application.
+
+node provides REPL
+node
+
+Moleculer provides REPL Prompt for testing services interactivly.
+Moleculer provides REPL Prompt for testing services interactivly.
+
+services/math.service
+
+const { ServiceBroker } = require('moleculer');
+
+const broker = new ServiceBroker();
+
+broker.createService({
+    name: 'math',
+    actions: {
+        add: {
+            params: {
+                a: 'number',
+                b: 'number'
+            },
+            handler(ctx) {
+                const { a, b } = ctx.params
+                return a + b;
+            }
+
+        }
+    }
+});
+
+async function main() {
+    try {
+        await broker.start()
+        broker.repl();        
+    }
+    catch (err) {
+        console.log(err);
+    }
+
+}
+main();
+
+
+
+npm install moleculer-repl --save-dev
+
+>node services/repl.service.js
+[2021-07-24T09:34:52.394Z] INFO  laptop-r2tggfdl-6988/BROKER: Moleculer v0.14.16 is starting...
+[2021-07-24T09:34:52.396Z] INFO  laptop-r2tggfdl-6988/BROKER: Namespace: <not defined>
+[2021-07-24T09:34:52.397Z] INFO  laptop-r2tggfdl-6988/BROKER: Node ID: laptop-r2tggfdl-6988
+[2021-07-24T09:34:52.398Z] INFO  laptop-r2tggfdl-6988/REGISTRY: Strategy: RoundRobinStrategy
+[2021-07-24T09:34:52.399Z] INFO  laptop-r2tggfdl-6988/REGISTRY: Discoverer: LocalDiscoverer
+[2021-07-24T09:34:52.407Z] INFO  laptop-r2tggfdl-6988/BROKER: Serializer: JSONSerializer
+[2021-07-24T09:34:52.419Z] INFO  laptop-r2tggfdl-6988/BROKER: Validator: FastestValidator
+[2021-07-24T09:34:52.421Z] INFO  laptop-r2tggfdl-6988/BROKER: Registered 13 internal middleware(s).
+[2021-07-24T09:34:52.440Z] INFO  laptop-r2tggfdl-6988/REGISTRY: '$node' service is registered.
+[2021-07-24T09:34:52.443Z] INFO  laptop-r2tggfdl-6988/REGISTRY: 'math' service is registered.
+[2021-07-24T09:34:52.443Z] INFO  laptop-r2tggfdl-6988/$NODE: Service '$node' started.
+[2021-07-24T09:34:52.444Z] INFO  laptop-r2tggfdl-6988/MATH: Service 'math' started.
+[2021-07-24T09:34:52.445Z] INFO  laptop-r2tggfdl-6988/BROKER: ✔ ServiceBroker with 2 service(s) is started successfully in 13ms.
+mol $ help
+
+  Commands:
+
+    help [command...]                                          Provides help for a given command.
+    q                                                          Exit application
+    actions [options]                                          List of actions
+    bench [options] <action> [jsonParams] [meta]               Benchmark a service
+    broadcast <eventName>                                      Broadcast an event
+    broadcastLocal <eventName>                                 Broadcast an event locally
+    cache keys [options]                                       List keys of cache entries
+    cache clear [pattern]                                      Clear cache entries
+    call [options] <actionName> [jsonParams] [meta]            Call an action
+    dcall [options] <nodeID> <actionName> [jsonParams] [meta]  Direct call an action
+    clear [pattern]                                            Clear cache entries
+    cls                                                        Clear console
+    destroy <serviceName> [version]                            Destroy a local service
+    emit <eventName>                                           Emit an event
+    env                                                        List of environment variables
+    events [options]                                           List of event listeners
+    info                                                       Information about broker
+    load <servicePath>                                         Load a service from file
+    loadFolder <serviceFolder> [fileMask]                      Load all services from folder
+    metrics [options]                                          List metrics
+    nodes [options]                                            List of nodes
+    services [options]                                         List of services
+
+mol $
+
+
+Services:
+
+-admin service
+   services for monitoring moleculer application
+$node
+
+-application services
+math,customer,user
+
+call math.add --a 10 --b 20
+>> Call 'math.add' with params: { a: 10, b: 20 }
+>> Execution time:592μs
+>> Response:
+30
+mol $ call math.add --a 10 --b 30
+>> Call 'math.add' with params: { a: 10, b: 30 }
+>> Execution time:653μs
+>> Response:
+40
+mol $ call math.add --a 10 --b 390
+>> Call 'math.add' with params: { a: 10, b: 390 }
+>> Execution time:473μs
+>> Response:
+400
+mol $ call math.add --a 100 --b 390
+>> Call 'math.add' with params: { a: 100, b: 390 }
+>> Execution time:551μs
+>> Response:
+490
+
+
+
+
+.............................................................................................
+				  Remote Services
+............................................................................................
+
+
+open two cmd
+>node services/remote1.service.js
+>node services/remote2.service.js
+
+from remote1.service.js , invoke method from repl
+ call math.add --a 10 --b 20
+>> Call 'math.add' with params: { a: 10, b: 20 }
+[2021-07-24T10:01:27.768Z] WARN  laptop-r2tggfdl-11112/BROKER: Service 'adder.add' is not registered.
+>> ERROR:
+ServiceNotFoundError: Service 'adder.add' is not found.
+    at ServiceBroker.findNextActionEndpoint (C:\session\CYIENT\microserviceapp\node_modules\moleculer\src\service-broker.js:1034:13)
+    at ServiceBroker.call (C:\session\CYIENT\microserviceapp\node_modules\moleculer\src\service-broker.js:1083:26)
+    at Context.call (C:\session\CYIENT\microserviceapp\node_modules\moleculer\src\context.js:289:23)
+    at Service.handler (C:\session\CYIENT\microserviceapp\services\remote1.service.js:15:28)
+    at C:\session\CYIENT\microserviceapp\node_modules\moleculer\src\utils.js:185:22
+    at processCheckResponse (C:\session\CYIENT\microserviceapp\node_modules\moleculer\src\validators\base.js:66:12)
+    at validateContextParams (C:\session\CYIENT\microserviceapp\node_modules\moleculer\src\validators\base.js:84:15)
+    at ServiceBroker.timeoutMiddleware (C:\session\CYIENT\microserviceapp\node_modules\moleculer\src\middlewares\timeout.js:35:14)
+    at ServiceBroker.fallbackMiddleware (C:\session\CYIENT\microserviceapp\node_modules\moleculer\src\middlewares\fallback.js:29:11)
+    at ServiceBroker.errorHandlerMiddleware (C:\session\CYIENT\microserviceapp\node_modules\moleculer\src\middlewares\error-handler.js:14:10)
+Data:  { action: 'adder.add' }
+
+
+-The moleculer not able to find out service from the local node, since it is running remotly
+............................................................................................
+.............................................................................................
+				Networking
+............................................................................................
+
+
+
+In order to communicate with other nodes(serviceBrokers) you need to configure a transporter.
+
+
+Transporters:
+
+-Transporter is an important module if you are running services on multiple nodes. 
+
+-Transporter communicates with other nodes. 
+
+-It transfers events, calls requests and processes responses …etc. 
+
+-If a service runs on multiple instances on different nodes, the requests will be load-balanced among live nodes.
+
+Transports:
+............
+
+Built-in transporters
+
+TCP transporter
+NATS Transporter
+Redis Transporter
+MQTT Transporter
+AMQP Transporter
+Kafka Transporter
+NATS Streaming (STAN) Transporter
+
+..............................................................................................
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
