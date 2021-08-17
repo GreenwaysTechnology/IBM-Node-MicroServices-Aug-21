@@ -4131,15 +4131,819 @@ NATS Streaming (STAN) Transporter
 ..............................................................................................
 
 
+Steps;
+
+1.you have to run Transporter broker software
+
+ like redis server or nats server ,AMQP server.....
+
+NATS: Bridge :https://nats.io/download/
+
+docker run  --name nats-main -d -p 4222:4222 -p 6222:6222 -p 8222:8222 nats 
+
+broker.createService({
+    name: 'math',
+    actions: {
+        add: {
+            params: {
+                a: 'number',
+                b: 'number'
+            },
+            handler(ctx) {
+                const { a, b } = ctx.params
+                //invoke services
+                return ctx.call('adder.add', { a: a, b: b });
+            }
+
+        }
+    }
+});
+
+async function main() {
+    try {
+        await broker.start()
+        broker.repl();
+    }
+    catch (err) {
+        console.log(err);
+    }
+
+}
+main();
+
+
+services/remote2.service.js
+
+    const { ServiceBroker } = require('moleculer');
+
+    const broker = new ServiceBroker({
+         nodeID:'Cyient-Server-2',
+         transporter:'nats://localhost:4222'
+    });
+
+    broker.createService({
+        name: 'adder',
+        actions: {
+            add: {
+                params: {
+                    a: 'number',
+                    b: 'number'
+                },
+                handler(ctx) {
+                    const { a, b } = ctx.params
+                    return `${a + b} - ${broker.nodeID}`;
+                }
+
+            }
+        }
+    });
+
+    async function main() {
+        try {
+            await broker.start()
+            broker.repl();
+        }
+        catch (err) {
+            console.log(err);
+        }
+
+    }
+    main();
+
+
+>node services/remote1.service.js
+
+
+>> Call 'math.add' with params: { a: 10, b: 20 }
+>> Execution time:13s
+>> Response:
+'30 - laptop-r2tggfdl-13600'
+mol $ call math.add --a 10 --b 20
+>> Call 'math.add' with params: { a: 10, b: 20 }
+>> Execution time:4ms
+>> Response:
+'30 - Cyient-Server-2'
+mol $ call math.add --a 10 --b 20
+>> Call 'math.add' with params: { a: 10, b: 20 }
+>> Execution time:4ms
+>> Response:
+'30 - Cyient-Server-2'
+mol $ call math.add --a 10 --b 200
+>> Call 'math.add' with params: { a: 10, b: 200 }
+>> Execution time:3ms
+>> Response:
+'210 - Cyient-Server-2'
+mol $ call math.add --a 10 --b 20000
+>> Call 'math.add' with params: { a: 10, b: 20000 }
+>> Execution time:3ms
+>> Response:
+'20010 - Cyient-Server-2'
+mol $ call math.add --a 10 --b 20000
+>> Call 'math.add' with params: { a: 10, b: 20000 }
+>> Execution time:3ms
+>> Response:
+'20010 - Cyient-Server-2'
+mol $
+.............................................................................................
+...............................................................................................
+				Service inheritance
+
+Objective:
+
+ lets say i have a service having more methods, that i dont want to give in a service
+ i have service , that service apis , i want to reuse in service apis.
+
+Service inheritance comes into place.
+
+In molecular , a service can inherit many services - multi level, for multi level, molcular uses a concept called "mixins".
+
+mixins is a design pattern used in javascript to implement multi level inheritance like java uses interfaces.
+
+
+Use case:
+1.if you write any REST Controller.
+2.if you write database operations inside your service.
+
+
+How to write services in a different file
+
+How to do inheritance(service mixins) - mixin means multilevel 
 
 
 
+services/parent.service.js
+
+//service is exported
+module.exports = {
+    name: 'hello',
+    actions: {
+        //define biz api of that service
+        sayHello() {
+            return 'Hello,Moleculer'
+        }
+    }
+};
+
+const { ServiceBroker } = require('moleculer');
+const hello = require('./parent.service');
+
+const broker = new ServiceBroker();
+
+broker.createService({
+    name: 'greeter',
+    mixins: [hello],
+    actions: {
+        sayGreet: {
+            handler(ctx) {
+                return 'Greet';
+            }
+        }
+    }
+})
+
+async function main(){
+    
+    try {
+        await broker.start()
+        broker.repl();
+    }
+    catch (err) {
+        console.log(err);
+    }
+}
+main()
+
+call greeter.sayHello
+>> Call 'greeter.sayHello' with params: {}
+>> Execution time:1ms
+>> Response:
+'Hello'
+mol $ call greeter.sayGreet
+>> Call 'greeter.sayGreet' with params: {}
+>> Execution time:323μs
+>> Response:
+'Greet'
+..............................................................................................
+				  HTTP Services
+............................................................................................
+
+
+if you wanto build HTTP based services(rest apis), molculer core lib has no apis.
+
+We need to go with modules. Molculur provides modules in order to extend the basic moleculr application.
+
+Modules:
+-API Gate Module -  Web
+-Databases and Stores 
+-Micro services management
+  -Mertics and Tracing
+-Secuirty
+-Validation
+etc........
+
+-API Gate Module -  Web 
+moleculer-web:
+
+ official API Gate way module for Moleculer Framework
+
+Features:
+-support for http and https
+-serve static files
+-router supports
+-file upload support
+-alias names
+-whitelist
+-multiple body parsers-json,urlencoded
+-cors
+-Etags
+-RateLimitter
+-streaming support
+etc....
+
+Steps to integrate Moleculer-Web
+
+-npm install moleculer-web --save
+
+
+services/firstrest.service.js
+
+const { ServiceBroker } = require('moleculer');
+const { mixins } = require('moleculer-web');
+const ApiGateWay = require('moleculer-web');
+
+
+const broker = new ServiceBroker();
+
+//service which to be accssed by clients
+
+//http://localhost:3000/api/greeter/sayHello
+broker.createService({
+    name: "greeter",
+    actions: {
+        sayHello() {
+            return "Hello"
+        },
+        sayHai() {
+            return "Hai"
+        }
+    }
+})
+//http://localhost:3000/api/users/list
+broker.createService({
+    name: "users",
+    actions: {
+        list() {
+            return 'USERS'
+        }
+    }
+})
+
+
+//create service : //Gate Way/http service
+broker.createService({
+    name: 'ApiGateWayService',
+    mixins: [ApiGateWay],
+    settings: {
+        routes: [
+            {
+                path: '/api'
+            }
+        ]
+    }
+})
+
+
+async function main() {
+    await broker.start();
+}
+main();
+............................................................................................
+
+white list:
+
+const { ServiceBroker } = require("moleculer");
+const ApiGateWayService = require("moleculer-web");
+
+const broker = new ServiceBroker();
+
+broker.createService({
+    name: "greeter",
+    actions: {
+        sayHello() {
+            return "Hello"
+        },
+        sayHai() {
+            return "Hai"
+        }
+    }
+})
+
+broker.createService({
+    name: 'ApiGateWayService',
+    mixins: [ApiGateWayService],
+    settings: {
+        routes: [
+            {
+                path: "/api",
+                whitelist: [
+                    "greeter.sayHello"  
+                    //Restrict to access all actions in Greeter service
+                    //"greeter.*"                 
+                ]               
+            }
+        ]
+    }
+})
+
+async function init() {
+    try {
+        await broker.start();
+    }
+    catch (e) {
+        log(e);
+    }
+}
+init();
+
+////////////////////////////////////////////////////////////////////////////////////////////
+
+URL Mapping in moleculer:
+
+http://localhost:3000/api/serviceName/actionName
+
+  This is not good way to map urls , which more difficult to remember, it is not user friendly
+it is not even secure,the reason, we expose the back end service to end users.
+
+Aliases:
+........
+  You can use aliases(dummyname/fakename)-Virtual path, instead of action name.
+
+ settings: {
+        routes: [
+            {
+                path: "/api",
+                aliases: { 
+
+                    "hello" : "greeter.hello",
+                    "users" :  "users.list"
+                }             
+            }
+        ]
+
+http://localhost:3000/api/hello
+http://localhost:3000/api/users
+
+
+const { ServiceBroker } = require("moleculer");
+const ApiGateWayService = require("moleculer-web");
+
+const USERS = require('../mock-data/users')
+
+
+const broker = new ServiceBroker();
+
+//back end service
+broker.createService({
+    name: "greeter",
+    actions: {
+        sayHello() {
+            return "Hello"
+        },
+        sayWelcome() {
+            return 'Welcome'
+        },
+        sayHai() {
+            return 'Hai'
+        }
+
+    }
+})
+
+broker.createService({
+    name: "users",
+    actions: {
+        list() {
+            return USERS
+        }
+    }
+})
+
+//Frond End Service
+//entry url configuration and action configuration - frond to back end configuration
+
+broker.createService({
+    name: 'ApiGateWayService',
+    mixins: [ApiGateWayService],
+    settings: {
+        routes: [
+            {
+                path: "/api",
+                aliases: {
+                    "hello": "greeter.sayHello",
+                    "hai": "greeter.sayHai",
+                    "welcome": "greeter.sayWelcome",
+                    "users": "users.list"
+                }
+            }
+        ]
+    }
+})
+
+async function init() {
+    try {
+        await broker.start();
+    }
+    catch (e) {
+        log(e);
+    }
+}
+init();
+............................................................................................
+			HTTP Method Mapping -GET,POST,DELETE,PUT
+............................................................................................
+
+
+const { ServiceBroker } = require("moleculer");
+const ApiGateWayService = require("moleculer-web");
+const USERS = require('../mock-data/users');
+
+
+const broker = new ServiceBroker();
+
+
+broker.createService({
+    name: "users",
+    actions: {
+        list() {
+            return USERS
+        },
+        get(ctx) {
+            console.log(ctx.params)
+            return USERS.filter(user => user.id == ctx.params.id)
+        },
+        create(ctx) {
+            console.log(ctx.params)
+            return 'User Created'
+        },
+        update(ctx) {
+            return 'User updated'
+        },
+        remove(ctx) {
+            return 'User removed'
+        }
+
+    }
+})
+//Frond End Service
+//entry url configuration and action configuration - frond to back end configuration
+
+broker.createService({
+    name: 'ApiGateWayService',
+    mixins: [ApiGateWayService],
+    settings: {
+        routes: [
+            {
+                path: "/api",
+                aliases: {
+                    "GET users": "users.list",
+                    "GET users/:id": "users.get",
+                    "POST users": "users.create",
+                    "PUT users/:id": "users.update",
+                    "DELETE users/:id": "users.remove"
+                }
+            }
+        ]
+    }
+})
+
+
+async function init() {
+    try {
+        await broker.start();
+    }
+    catch (e) {
+        log(e);
+    }
+}
+init();
+..............................................................................................
+////////////////////////////////////////////////////////////////////////////////////////////
+			HTTP Methods -Short Cut : Generate CURD mapping automatically
+............................................................................................
+
+what if i have more resources
+
+users
+orders
+customers
+
+         aliases: {
+                    "GET users": "users.list",
+                    "GET users/:id": "users.get",
+                    "POST users": "users.create",
+                    "PUT users/:id": "users.update",
+                    "DELETE users/:id": "users.remove"
+
+                    "GET orders": "orders.list",
+                    "GET orders/:id": "orders.get",
+                    "POST orders": "orders.create",
+                    "PUT orders/:id": "orders.update",
+                    "DELETE orders/:id": "orders.remove"
+                }
+
+
+SHORT Cut 
+
+ aliases: { 
+   "REST users" : "users"
+ }
+
+method names:
+ list - users.list
+ get
+ create
+ update
+ remove
+
+
+const { ServiceBroker } = require("moleculer");
+const ApiGateWayService = require("moleculer-web");
+const USERS = require('../mock-data/users');
+
+
+const broker = new ServiceBroker();
+
+
+broker.createService({
+    name: "users",
+    actions: {
+        list() {
+            return USERS
+        },
+        get(ctx) {
+            console.log(ctx.params)
+            return USERS.filter(user => user.id == ctx.params.id)
+        },
+        create(ctx) {
+            console.log(ctx.params)
+            return 'User Created'
+        },
+        update(ctx) {
+            return 'User updated'
+        },
+        remove(ctx) {
+            return 'User removed'
+        }
+
+    }
+})
+
+broker.createService({
+    name: "orders",
+    actions: {
+        list() {
+            return 'orders'
+        },
+        //api/orders/1 /orders/:id
+        get(ctx) {
+            return `Orders by id ${ctx.params.id}`
+        },
+        create(ctx) {
+            console.log(ctx.params)
+            return 'order Created'
+        },
+        update(ctx) {
+            return 'order updated'
+        },
+        remove(ctx) {
+            return 'order removed'
+        }
+
+    }
+})
+//Frond End Service
+//entry url configuration and action configuration - frond to back end configuration
+
+broker.createService({
+    name: 'ApiGateWayService',
+    mixins: [ApiGateWayService],
+    settings: {
+        routes: [
+            {
+                path: "/api",
+                aliases: {
+                    "REST users": "users",
+                    "REST orders": "orders"
+                }
+            }
+        ]
+    }
+})
+
+
+async function init() {
+    try {
+        await broker.start();
+    }
+    catch (e) {
+        log(e);
+    }
+}
+init();
+..............................................................................................
+const { ServiceBroker } = require("moleculer");
+const ApiGateWayService = require("moleculer-web");
+const USERS = require('../mock-data/users')
+
+const broker = new ServiceBroker();
+
+
+broker.createService({
+    name: "users",
+    actions: {
+        list: {
+            rest: "GET /",
+            handler(ctx) {
+                return USERS;
+            }
+        },
+        get: {
+            rest: "GET /:id",
+            handler(ctx) {
+                return USERS.filter(user => user.id == ctx.params.id)
+            }
+        }
+    }
+})
+
+//Frond End Service
+//entry url configuration and action configuration - frond to back end configuration
+
+broker.createService({
+    name: 'ApiGateWayService',
+    mixins: [ApiGateWayService],
+    settings: {
+        routes: [
+            {
+                path: "/api",
+                aliases: {
+                     
+                },
+                autoAliases: true
+            }
+        ]
+    }
+})
+
+async function init() {
+    try {
+        await broker.start();
+    }
+    catch (e) {
+        log(e);
+    }
+}
+init();
+............................................................................................
+
+const { ServiceBroker } = require("moleculer");
+const ApiGateWayService = require("moleculer-web");
+const USERS = require('../mock-data/users')
+const compression = require('compression')
+
+const broker = new ServiceBroker();
+
+
+broker.createService({
+    name: "users",
+    actions: {
+        list: {
+            rest: "GET /",
+            handler(ctx) {
+                return USERS;
+            }
+        },
+        get: {
+            rest: "GET /:id",
+            handler(ctx) {
+                return USERS.filter(user => user.id == ctx.params.id)
+            }
+        }
+    }
+})
+
+//Frond End Service
+//entry url configuration and action configuration - frond to back end configuration
+
+broker.createService({
+    name: 'ApiGateWayService',
+    mixins: [ApiGateWayService],
+    settings: {
+        use: [
+            compression()
+        ],
+        routes: [
+            {
+                path: "/api",
+                aliases: {
+                     
+                },
+                autoAliases: true
+            }
+        ]
+    }
+})
+
+async function init() {
+    try {
+        await broker.start();
+    }
+    catch (e) {
+        log(e);
+    }
+}
+init();
+.............................................................................................
+const { ServiceBroker } = require("moleculer");
+const ApiGateWayService = require("moleculer-web");
+const DbService = require('moleculer-db')
+const Fakerator = require('fakerator');
+const { started } = require("moleculer-web");
+
+
+//create Fakerator object
+const fakerator = new Fakerator();
+
+const broker = new ServiceBroker();
+
+broker.createService({
+    name:'users',
+    mixins:[DbService],
+    adapter: new DbService.MemoryAdapter(), //NeDb
+     //column mapping
+     settings :  {
+        fields: ["_id","firstName","lastName","email","status"]
+    },
+     //life cycle method
+     afterConnected() {
+        //seeding the database with default data
+        this.logger.info('connection started')
+    },
+    //private methods of service
+    methods: {
+        async seedDB() {
+            this.logger.info('Seeding User Database starts');
+            //generate fake users
+            const fakeUsers = fakerator.times(fakerator.entity.user, 100);
+            //insert into db
+            const insertedUsers = await this.adapter.insertMany(fakeUsers);
+            this.logger.info(`Created ${insertedUsers.length}`, insertedUsers)
+        }
+    },
+    //service life cycle
+    async started() {
+        if ((await this.adapter.count()) === 0) {
+            await this.seedDB();
+        } else {
+            this.logger.info(`DB contains ${await this.adapter.count()} users`)
+        }
+    }
+})
 
 
 
+broker.createService({
+    name: 'ApiGateWayService',
+    mixins: [ApiGateWayService],
+    settings: {
+        routes: [
+            {
+                path: "/api",
+                aliases: {
+                  "REST users": "users"  
+                }
+            }
+        ]
+    }
+})
 
+async function init() {
+    try {
+        await broker.start();
+    }
+    catch (e) {
+        log(e);
+    }
+}
+init();
+..............................................................................................
 
-
+Service discovery and registry
+load balancers
+reslicency patterns
+management patterns
+moleculer-runner - moleculer-cli
+.............................................................................................
 
 
 

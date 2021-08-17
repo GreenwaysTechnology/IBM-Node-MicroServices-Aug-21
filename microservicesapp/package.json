@@ -9,7 +9,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "moleculer": "^0.14.16"
+    "compression": "^1.7.4",
+    "fakerator": "^0.3.3",
+    "moleculer": "^0.14.16",
+    "moleculer-db": "^0.8.15",
+    "moleculer-web": "^0.10.0",
+    "nats": "^1.4.12"
   },
   "devDependencies": {
     "moleculer-repl": "^0.6.6"

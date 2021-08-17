@@ -1,6 +1,10 @@
 
 const { ServiceBroker } = require('moleculer');
-const broker = new ServiceBroker();
+
+const broker = new ServiceBroker({
+    nodeID : 'IBM Server-2',
+    transporter:'nats://localhost:4222'
+});
 
 broker.createService({
     name: 'adder',
@@ -12,7 +16,7 @@ broker.createService({
             },
             handler(ctx) {
                 const { a, b } = ctx.params
-                return a + b;
+                return `${a + b}  - ` + broker.nodeID;
             }
         }
     }

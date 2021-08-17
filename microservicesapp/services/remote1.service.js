@@ -1,7 +1,11 @@
 
 const { ServiceBroker } = require('moleculer');
 
-const broker = new ServiceBroker();
+//service broker configuration
+const broker = new ServiceBroker({
+    nodeID: 'IBM SERVER-1',
+    transporter:'nats://localhost:4222'
+});
 
 //math service
 broker.createService({
@@ -26,8 +30,6 @@ async function init() {
 
     try {
         await broker.start()
-        // const res = await broker.call('math.add', { a: 10, b: 20 })
-        // console.log(res);
         broker.repl();
     }
     catch (err) {
