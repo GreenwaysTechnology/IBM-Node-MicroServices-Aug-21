@@ -2,14 +2,7 @@
 const { ServiceBroker } = require('moleculer');
 
 const broker = new ServiceBroker({
-    //nodeID : 'IBM Server-2',
-    transporter:'nats://localhost:4222',
-    registry: {
-        //discoverer:'Redis'
-        discoverer: "redis://localhost:6379",
-        strategy:"Random"
-    },
-    
+    transporter: 'nats://localhost:4222'
 });
 
 broker.createService({
@@ -21,8 +14,10 @@ broker.createService({
                 b: 'number'
             },
             handler(ctx) {
-                const { a, b } = ctx.params
-                return `${a + b}  - ` + broker.nodeID;
+                const { a, b } = ctx.params;
+                return new Promise((resolve, reject) => {
+                    setTimeout(resolve, 4000, `${a + b} - ${broker.nodeID} `)
+                })
             }
         }
     }

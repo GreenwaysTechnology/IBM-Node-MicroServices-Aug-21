@@ -4944,6 +4944,767 @@ reslicency patterns
 management patterns
 moleculer-runner - moleculer-cli
 .............................................................................................
+                              Service discovery and registry
+.............................................................................................
+
+
+1.Service Registry
+
+ It is mini /small database , key-value pair database, in memory database.
+ Which has all service,actions,event listeners, nodes information.
+
+
+1.Service Registry
+
+ It is mini /small database , key-value pair database, in memory database.
+ Which has all service,actions,event listeners, nodes information.
+
+Points:
+1.Every Broker has in built Service Registry
+     Moleculer has built in in-memory registry, we can use that registry directly.
+
+2.All services local or remote are registered with service registry as soon you create 
+  service
+3.Molecular has built in registry called LocalDiscoveryRegistry, which is not using third party registry servers
+  like apache zoo keeper,cosule,etcd,eurka....
+
+4.if you want to make other servers as service registry -
+
+    registry: {
+        discoverer: "redis://redis-server:6379"
+    }  
+
+
+What is discovery?
+   
+   Discovery  means the lookup, search, we are going to search "services" from the registry infra structure.
+
+         "All Services when is created is registered in Service Registry"
+
+Moleculer looks up services from the registry by name.
+
+Either local service or remote services communicate via "Service Registry" Only.
+
+Remote services are communicated via "registry and transporter".
+
+Registry logs:
+
+[2021-07-01T11:03:37.313Z] INFO  IBM-MainServer/REGISTRY: Strategy: RoundRobinStrategy
+[2021-07-01T11:03:37.314Z] INFO  IBM-MainServer/REGISTRY: Discoverer: LocalDiscoverer
+
+[2021-07-01T11:03:37.445Z] INFO  IBM-MainServer/REGISTRY: Node 'IBM-RemoteNode-1' connected.
+[2021-07-01T11:03:37.448Z] INFO  IBM-MainServer/REGISTRY: Node 'IBM-RemoteNode-2' connected.
+[2021-07-01T11:03:37.947Z] INFO  IBM-MainServer/REGISTRY: '$node' service is registered.
+[2021-07-01T11:03:37.948Z] INFO  IBM-MainServer/REGISTRY: 'main' service is registered.
+
+
+How to change new Service Registry/Discover?
+
+Redis  as Service Registry.
+
+Steps:
+
+1.Start Redis Server.
+
+docker run  -p 6379:6379 redis
+
+2.install redis driver
+npm install ioredis --save
+
+const broker = new ServiceBroker({
+    nodeID: 'IBM-MainServer',
+    transporter: "nats://localhost:4222",
+    registry: {
+        //discoverer:'Redis'
+        discoverer: "redis://localhost:6379"
+    }
+});
+node services/remotemain.service.js
+[2021-07-01T11:13:09.882Z] INFO  IBM-MainServer/BROKER: Moleculer v0.14.14 is starting...
+[2021-07-01T11:13:09.886Z] INFO  IBM-MainServer/BROKER: Namespace: <not defined>
+[2021-07-01T11:13:09.886Z] INFO  IBM-MainServer/BROKER: Node ID: IBM-MainServer
+[2021-07-01T11:13:09.888Z] INFO  IBM-MainServer/REGISTRY: Strategy: RoundRobinStrategy
+[2021-07-01T11:13:09.890Z] INFO  IBM-MainServer/REGISTRY: Discoverer: RedisDiscoverer
+[2021-07-01T11:13:09.909Z] INFO  IBM-MainServer/BROKER: Serializer: JSONSerializer
+[2021-07-01T11:13:09.927Z] INFO  IBM-MainServer/BROKER: Validator: FastestValidator
+[2021-07-01T11:13:09.930Z] INFO  IBM-MainServer/BROKER: Registered 13 internal middleware(s).
+[2021-07-01T11:13:09.933Z] INFO  IBM-MainServer/TRANSPORTER: NATS lib version: 1.4.12
+[2021-07-01T11:13:09.934Z] INFO  IBM-MainServer/BROKER: Transporter: NatsTransporter
+[2021-07-01T11:13:10.032Z] WARN  IBM-MainServer/DISCOVERY: Redis Discoverer is an EXPERIMENTAL module. Do NOT use it in production!
+[2021-07-01T11:13:10.057Z] INFO  IBM-MainServer/TRANSIT: Connecting to the transporter...
+[2021-07-01T11:13:10.102Z] INFO  IBM-MainServer/DISCOVERY: Redis Discoverer client connected.
+[2021-07-01T11:13:10.115Z] INFO  IBM-MainServer/TRANSPORTER: NATS client v1 is connected.
+[2021-07-01T11:13:10.630Z] INFO  IBM-MainServer/REGISTRY: '$node' service is registered.
+[2021-07-01T11:13:10.631Z] INFO  IBM-MainServer/REGISTRY: 'main' service is registered.
+[2021-07-01T11:13:10.632Z] INFO  IBM-MainServer/$NODE: Service '$node' started.
+[2021-07-01T11:13:10.633Z] INFO  IBM-MainServer/MAIN: Service 'main' started.
+[2021-07-01T11:13:10.850Z] INFO  IBM-MainServer/BROKER: ✔ ServiceBroker with 2 service(s) is started successfully in 7
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+			Scaleablity and High Availability
+.............................................................................................
+
+Scalling Means, increasing/decreasing resources.
+Resources could be hardware resources or software resources.
+
+Types of Scaleability:
+
+1.Vertical 
+   increasing hardware resources
+2.Horziontal
+   increasing software resources.
+//////////////////////////////////////////////////////////////////////////////////////////////
+			Scaleablity and High Availability
+.............................................................................................
+
+Scalling Means, increasing/decreasing resources.
+Resources could be hardware resources or software resources.
+
+Types of Scaleability:
+
+1.Vertical 
+   increasing hardware resources
+2.Horziontal
+   increasing software resources.
+
+
+In distributed Programming(microservices), we need to clone the services n of times in order
+serve to all clients effectivly.: Horziontal scaling.
+
+When scale services, it is difficult to route the service calls to service instances because the same service instance exits in multiple copies.
+
+How to select which service instance to be assigned to caller(client), 
+
+   With help of Load Balancer.
+
+Load Balancer balances incomming load and route according to "router algorthims" provided by load balancers.
+
+
+Built-in strategies
+
+ ->RoundRobin strategy
+	This strategy selects a node based on round-robin algorithm.
+   Refer:https://en.wikipedia.org/wiki/Round-robin_DNS
+ ->Random strategy
+	This strategy selects a node randomly.
+ ->CPU usage-based strategy
+	This strategy selects a node which has the lowest CPU usage. Due to the node list can 	be very long, it gets samples and selects the node with the lowest CPU usage from only 	samples instead of the whole node list.
+
+ ->Latency-based strategy
+	This strategy selects a node which has the lowest latency, measured by periodic ping commands. Notice that the strategy only ping one of nodes from a single host.
+
+
+
+How to implement load balancing?
+
+1.You need to clone the services n- number of times.
+  lets say i have service called "adder" service , i need to run adder service 2 instances
+
+2.Each service is going to run in different nodes. Each node must be identified quickly.
+  Node name should not be hardcoded.
+  In Genernal Node Id would be  - computername_processId
+  
+
+Steps:
+
+1.Run remote2 service two times
+open two cmd prompt and run.
+
+>node services/remote2.service.js
+>node services/remote2.service.js
+
+
+
+const { ServiceBroker } = require('moleculer');
+
+//service broker configuration
+const broker = new ServiceBroker({
+  //  nodeID: 'IBM SERVER-1',
+    transporter:'nats://localhost:4222',
+    registry: {
+        //discoverer:'Redis'
+        discoverer: "redis://localhost:6379",
+        strategy:"Random"
+    }
+});
+
+//math service
+broker.createService({
+    name: 'math',
+    actions: {
+        add: {
+            //meta information: validation
+            params: {
+                a: 'number',
+                b: 'number'
+            },
+            handler(ctx) {
+                const { a, b } = ctx.params
+                //call adder service
+                return ctx.call('adder.addNumbers', { a: a, b: b })
+            }
+        }
+    }
+})
+
+async function init() {
+
+    try {
+        await broker.start()
+        broker.repl();
+    }
+    catch (err) {
+        console.log(err);
+    }
+
+}
+init();
+
+
+
+const { ServiceBroker } = require('moleculer');
+
+const broker = new ServiceBroker({
+    //nodeID : 'IBM Server-2',
+    transporter:'nats://localhost:4222',
+    registry: {
+        //discoverer:'Redis'
+        discoverer: "redis://localhost:6379",
+        strategy:"Random"
+
+    },
+    
+});
+
+broker.createService({
+    name: 'adder',
+    actions: {
+        addNumbers: {
+            params: {
+                a: 'number',
+                b: 'number'
+            },
+            handler(ctx) {
+                const { a, b } = ctx.params
+                return `${a + b}  - ` + broker.nodeID;
+            }
+        }
+    }
+})
+
+async function init() {
+
+    try {
+        await broker.start()
+        broker.repl()
+    }
+    catch (err) {
+        console.log(err);
+    }
+
+}
+init();
+..............................................................................................
+				...........................................................................................
+				   Fault Management : Reliability
+...........................................................................................
+
+Distributed Env is subject to fail.
+
+Failures in Distributed Computing is always expected.
+
+What could be Failures?
+
+For a Caller (Who is requesting service/who is calling Service) Point of View.
+
+
+Caller Service  Expects , That data should be returned from Callee in 1000 ms , but Callee
+returns Data in 4000ms. , Timeout Exception will be thrown.
+
+
+Steps: 1 : caller Service
+
+const { ServiceBroker } = require('moleculer');
+
+const broker = new ServiceBroker({
+    nodeID: 'IBM-MainServer',
+    transporter: "nats://localhost:4222",
+
+    registry: {
+        //discoverer:'Redis'
+       // discoverer: "redis://localhost:6379"
+    }
+});
+
+broker.createService({
+    name: 'main',
+    actions: {
+        async begin(ctx) {
+            const { a, b } = ctx.params
+            let res = await ctx.call('remote1.calculate', { a, b },{
+                    timeout: 1000
+             })
+            console.log(`Result Got From Remote Services ${res}`)
+        }
+    }
+})
+
+async function init() {
+    await broker.start()
+    broker.repl()
+}
+init();
+
+
+Step 2: Callee:
+................
+
+Callee Level-1 :
+
+const { ServiceBroker } = require('moleculer');
+
+const broker = new ServiceBroker({
+    nodeID: 'IBM-RemoteNode-1',
+    transporter: "nats://localhost:4222",
+    registry: {
+        //discoverer:'Redis'
+       // discoverer: "redis://localhost:6379"
+    }
+
+});
+
+broker.createService({
+    name: 'remote1',
+    actions: {
+        async calculate(ctx) {
+            const { a, b } = ctx.params
+            return await ctx.call('remote2.calculate', { a, b })
+        }
+    }
+})
+
+async function init() {
+    await broker.start()
+    broker.repl()
+}
+init();
+
+
+Callee-Level 2
+const { ServiceBroker } = require('moleculer');
+
+const broker = new ServiceBroker({
+    // nodeID: 'IBM-RemoteNode-2',
+    transporter: "nats://localhost:4222",
+    registry: {
+        strategy:"Random"
+        //discoverer:'Redis'
+     //   discoverer: "redis://localhost:6379"
+    },
+    requestTimeout: 5 * 1000 // in milliseconds
+
+});
+
+broker.createService({
+    name: 'remote2',
+    actions: {
+        async calculate(ctx) {
+            const { a, b } = ctx.params
+            // return `${a + b} - ${broker.nodeID} `;
+             return new Promise((resolve,reject)=>{
+                 setTimeout(resolve,4000,`${a + b} - ${broker.nodeID} `)
+             })
+        }
+    }
+})
+
+async function init() {
+    await broker.start()
+    broker.repl()
+}
+init();
+
+Out Come:
+
+node services/remotemain.service.js
+[2021-07-02T05:37:00.812Z] INFO  IBM-MainServer/BROKER: Moleculer v0.14.14 is starting...
+[2021-07-02T05:37:00.814Z] INFO  IBM-MainServer/BROKER: Namespace: <not defined>
+[2021-07-02T05:37:00.814Z] INFO  IBM-MainServer/BROKER: Node ID: IBM-MainServer
+[2021-07-02T05:37:00.815Z] INFO  IBM-MainServer/REGISTRY: Strategy: RoundRobinStrategy
+[2021-07-02T05:37:00.816Z] INFO  IBM-MainServer/REGISTRY: Discoverer: LocalDiscoverer
+[2021-07-02T05:37:00.826Z] INFO  IBM-MainServer/BROKER: Serializer: JSONSerializer
+[2021-07-02T05:37:00.839Z] INFO  IBM-MainServer/BROKER: Validator: FastestValidator
+[2021-07-02T05:37:00.841Z] INFO  IBM-MainServer/BROKER: Registered 13 internal middleware(s).
+[2021-07-02T05:37:00.843Z] INFO  IBM-MainServer/TRANSPORTER: NATS lib version: 1.4.12
+[2021-07-02T05:37:00.844Z] INFO  IBM-MainServer/BROKER: Transporter: NatsTransporter
+[2021-07-02T05:37:00.861Z] INFO  IBM-MainServer/TRANSIT: Connecting to the transporter...
+[2021-07-02T05:37:00.900Z] INFO  IBM-MainServer/TRANSPORTER: NATS client v1 is connected.
+[2021-07-02T05:37:00.909Z] INFO  IBM-MainServer/REGISTRY: Node 'laptop-r2tggfdl-4416' connected.
+[2021-07-02T05:37:00.910Z] INFO  IBM-MainServer/REGISTRY: Node 'laptop-r2tggfdl-13180' connected.
+[2021-07-02T05:37:00.912Z] INFO  IBM-MainServer/REGISTRY: Node 'IBM-RemoteNode-1' connected.
+[2021-07-02T05:37:01.409Z] INFO  IBM-MainServer/REGISTRY: '$node' service is registered.
+[2021-07-02T05:37:01.410Z] INFO  IBM-MainServer/REGISTRY: 'main' service is registered.
+[2021-07-02T05:37:01.412Z] INFO  IBM-MainServer/$NODE: Service '$node' started.
+[2021-07-02T05:37:01.413Z] INFO  IBM-MainServer/MAIN: Service 'main' started.
+[2021-07-02T05:37:01.419Z] INFO  IBM-MainServer/BROKER: ✔ ServiceBroker with 2 service(s) is started successfully in 559ms.
+mol $ call "main.begin" --a 10 --b 20
+>> Call 'main.begin' with params: { a: 10, b: 20 }
+[2021-07-02T05:37:17.518Z] WARN  IBM-MainServer/BROKER: Request 'remote1.calculate' is timed out. { requestID: '5e20d57c-0694-4767-b120-34e478ad0023', nodeID: 'IBM-RemoteNode-1', timeout: 1000 }
+>> ERROR:
+RequestTimeoutError: Request is timed out when call 'remote1.calculate' action on 'IBM-RemoteNode-1' node.
+    at C:\session\ibm\2021\june\nodemicroservices\ms-gettingstarted\node_modules\moleculer\src\middlewares\timeout.js:42:14
+    at async Service.begin (C:\session\ibm\2021\june\nodemicroservices\ms-gettingstarted\services\remotemain.service.js:18:23)
+Data:  { action: 'remote1.calculate', nodeID: 'IBM-RemoteNode-1' }
+mol $
+
+The above code  throws Timeout Exception.
+
+What if i dont want Timout Exception?
+
+  You need to set fallback.
+
+Fallback is a function gets called , if execption is Thrown.
+
+Fallback function may return data from "cache" Servers.
+
+
+broker.createService({
+    name: 'main',
+    actions: {
+        async begin(ctx) {
+            const { a, b ,timeout } = ctx.params
+            let res = await ctx.call('remote1.calculate', { a, b }, {
+               // timeout: 1000,
+                timeout:timeout,
+                fallbackResponse() {
+                    //return data from caching server
+                    return `The Result is From cachining Server ${0}`
+                }
+            })
+            console.log(`Result Got From Remote Services ${res}`)
+        }
+    }
+})
+
+Testing:
+mol $ call "main.begin" --a 10 --b 20 --timeout 2000
+>> Call 'main.begin' with params: { a: 10, b: 20, timeout: 2000 }
+[2021-07-02T05:49:21.958Z] WARN  IBM-MainServer/BROKER: Request 'remote1.calculate' is timed out. { requestID: '2d946322-4668-4df5-9c92-acd97ae48811', nodeID: 'IBM-RemoteNode-1', timeout: 2000 }
+[2021-07-02T05:49:21.960Z] WARN  IBM-MainServer/BROKER: The 'remote1.calculate' request is failed. Return fallback response. { requestID: '2d946322-4668-4df5-9c92-acd97ae48811', err: "Request is timed out when call 'remote1.calculate' action on 'IBM-RemoteNode-1' node." }
+Result Got From Remote Services The Result is From cachining Server 0
+>> Execution time:2s
+>> Response:
+undefined
+mol $ call "main.begin" --a 10 --b 20 --timeout 5000
+>> Call 'main.begin' with params: { a: 10, b: 20, timeout: 5000 }
+Result Got From Remote Services 30 - laptop-r2tggfdl-13180
+>> Execution time:4s
+>> Response:
+undefined
+mol $
+
+How to set Global Timeout from the caller side?
+
+
+const { ServiceBroker } = require('moleculer');
+
+const broker = new ServiceBroker({
+    nodeID: 'IBM-MainServer',
+    transporter: "nats://localhost:4222",
+    requestTimeout: 1000, // in milliseconds,
+
+    registry: {
+        //discoverer:'Redis'
+        // discoverer: "redis://localhost:6379"
+    }
+});
+
+broker.createService({
+    name: 'main',
+    actions: {
+        async begin(ctx) {
+            const { a, b ,timeout } = ctx.params
+            // let res = await ctx.call('remote1.calculate', { a, b }, {
+            //    // timeout: 1000,
+            //     timeout:timeout,
+            //     fallbackResponse() {
+            //         //return data from caching server
+            //         return `The Result is From cachining Server ${0}`
+            //     }
+            // })
+            //which uses global timeout
+             let res = await ctx.call('remote1.calculate', { a, b })
+            console.log(`Result Got From Remote Services ${res}`)
+        }
+    }
+})
+
+async function init() {
+    await broker.start()
+    broker.repl()
+}
+init();
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+                                 Event Driven Architecture- EDA
+.............................................................................................
+
+
+- A Service can emit event ,  Another service can listens events.
+
+- If nodes are running in different machines, we can send and receive messages via transporters
+
+Broker has a built-in event bus to support Event-driven architecture and to send events to local and remote services.
+
+
+Register Events:
+
+ {
+    name: "payment",
+    events: {
+        "order.created": {
+            // Register handler to the "other" group instead of "payment" group.
+            group: "other",
+            handler(payload) {
+                // ...
+            }
+        }
+    }
+}
+
+      "user.created"(user) {
+            console.log("User created:", user);
+        }
+
+Emit Event
+
+broker.emit("order.created", order);
+ctx.emit("order.created",order)
+
+broker.broadcast("config.changed", config);
+
+emit vs broadcast
+
+emit - one to one
+
+broadcast - one to many  - pub -sub
+
+
+Steps:
+
+services/producer.service.js
+
+const { ServiceBroker } = require('moleculer')
+
+const broker = new ServiceBroker({
+    transporter: "nats://localhost:4222"
+})
+
+broker.createService({
+    name: 'producer',
+    actions: {
+        sayHello(ctx) {
+            const { message } = ctx.params;
+            ctx.emit('producer.message', `${message} from ${ctx.nodeID}`);
+        }
+    }
+})
+
+async function main() {
+    try {
+        await broker.start()
+        broker.repl();
+    }
+    catch (err) {
+        console.log(err)
+    }
+}
+
+main()
+
+services/consumer.service.js
+const { ServiceBroker } = require('moleculer')
+
+const broker = new ServiceBroker({
+    transporter: "nats://localhost:4222"
+})
+
+broker.createService({
+    name: 'consumer',
+    events: {
+        "producer.message"(message) {
+            console.log(message)
+        }
+    }
+})
+
+async function main() {
+    try {
+        await broker.start()
+        broker.repl();
+    }
+    catch (err) {
+        console.log(err)
+    }
+}
+
+main()
+
+ol $ call "producer.sayHello" --message Hello
+>> Call 'producer.sayHello' with params: { message: 'Hello' }
+>> Execution time:4ms
+>> Response:
+undefined
+mol $
+
+[2021-07-02T09:19:53.695Z] INFO  laptop-r2tggfdl-16576/BROKER: ✔ ServiceBroker with 2 service(s) is started successfully in 546ms.
+mol $ Hello from laptop-r2tggfdl-3124
+
+////////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+					Methods
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+1.public methods
+2.private methods
+3.life cycle methods - broker cycle, service life cycle
+4.HTTP end point methods.
+
+
+const { ServiceBroker } = require('moleculer');
+const { log } = console;
+const broker = new ServiceBroker();
+
+broker.createService({
+    name: 'math',
+    actions: {
+        //public methods
+        calculate(ctx) {
+          //calling private method
+          const result=this.add(ctx.params.a,ctx.params.b);
+          return result
+        }
+    },
+    //private methods
+    methods: {
+        add(a,b){
+            return a +b;
+        }
+    }
+});
+
+async function init() {
+    try {
+        await broker.start();
+        let response;
+        //calling public methods
+        response = await broker.call('math.calculate', { a: 10, b: 20 });
+        log(response);
+
+    }
+    catch (e) {
+        log(e);
+    }
+}
+init();
+..............................................................................................
+..............................................................................................
+			 Micro Services Managment Pattern Implementations
+.............................................................................................
+
+Metrics:
+........
+
+Moleculer has built in Metric module that collects all a lot of internal moleculer mertic values.
+
+Metrics must be enabled at broker level
+
+Mertics should be collected in metrics tools
+Reporter:
+ -Console Report
+ -CSV file
+ -datadog
+ -Prometheus
+ -StatsD
+
+ {
+   metrics: { 
+      enabled:true
+      reporter : [
+ 	 type:'prometheus'
+         options:{
+	    port:3030,
+            path: "/metrics"
+	 }
+      ]
+  }
+ }
+Reporter Representation:
+1.Counter
+2.Histogram
+3.Gauge
+
+Metrics:
+
+process information
+
+os information
+
+Moleculer runtime information
+..............................................................................................
+Tracing:
+........
+Moleculer has built in tracing module that collects tracing information inside moleculer app.
+
+Tracing tools/servers:
+-ZipKin
+-Jaeger
+-Console
+-DataDog
+
+ {
+   tracing: { 
+      enabled:true
+      exporter:{
+       type:'ZipKin'
+       
+     }
+  }
+ }
+..............................................................................................
+					Deployment
+.............................................................................................
+
+-Docker
+-DockerCompose
+-Kubernetes
+.............................................................................................
+				 Automation
+
+How to build realtime apps?
+
+-folders
+-all infra code-docker
+
+Solution:
+Moleculer runner.
+Moleculer cli tool.
+
+npm install -g moleculer-cli
+
+
+-moleculer.config.js
+ 
+ file contains universal broker defintion.
+
+module.exports= {
+
+
+
+}
+............................. Thank You.............................................
 
 
 
@@ -4954,4 +5715,5 @@ moleculer-runner - moleculer-cli
 
 
 
+ 
 
